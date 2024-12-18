@@ -640,7 +640,12 @@
                 break;
         }
 
-        const chartConfig = {
+        // Check if chart needs to be destroyed and recreated (helps with mobile responsiveness)
+        if (window.myChart) {
+            window.myChart.destroy();
+        }
+
+        window.myChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -760,16 +765,7 @@
                     }
                 }
             }
-        };
-
-        if (!window.myChart) {
-            window.myChart = new Chart(ctx, chartConfig);
-        } else {
-            window.myChart.data.labels = labels;
-            window.myChart.data.datasets[0].data = chartData;
-            window.myChart.options.plugins.title.text = chartTitle;
-            window.myChart.update();
-        }
+        });
     }
 
     // Update the view type change handler
@@ -780,13 +776,17 @@
 
         if (view === 'weekly') {
             document.getElementById('datePicker').style.display = 'none';
+            // Force chart update for weekly view
+            state.currentView = 'weekly';
             updateChart();
         } else {
             document.getElementById('datePicker').style.display = 'block';
             updateCalendarView(flatpickrInstance);
-            if (flatpickrInstance.selectedDates[0]) {
-                updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
+            // If there's no selected date, default to current month
+            if (!flatpickrInstance.selectedDates[0]) {
+                flatpickrInstance.setDate(new Date());
             }
+            updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
         }
     });
 
@@ -966,16 +966,25 @@
     document.addEventListener('DOMContentLoaded', () => {
         loadStateFromLocalStorage(); // Load saved data
         updateStats();              // Update statistics
-        updateChart();              // Update chart
-        updateGoalProgress();       // Update goal progress
         
-        // Hide date picker if weekly view is selected
-        const viewType = document.getElementById('viewType').value;
-        if (viewType === 'weekly') {
-            document.getElementById('datePicker').style.display = 'none';
+        // Set initial view based on viewport width
+        const viewType = document.getElementById('viewType');
+        const datePicker = document.getElementById('datePicker');
+        
+        // Initialize view type and date picker visibility
+        if (viewType.value === 'weekly') {
+            datePicker.style.display = 'none';
+        } else {
+            datePicker.style.display = 'block';
+            // Initialize flatpickr with current date
+            datePicker._flatpickr.setDate(new Date());
         }
+        
+        // Force initial chart update
+        state.currentView = viewType.value;
+        updateChart();
+        updateGoalProgress();
     });
-
 
     </script>
     </body></html>
