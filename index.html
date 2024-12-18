@@ -624,13 +624,17 @@
         let labels;
         let chartTitle = ''; // Add title variable
 
-        // Get selected date from flatpickr
         const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0] || new Date();
+        const currentDate = new Date();
 
         switch (state.currentView) {
             case 'weekly':
-                chartData = state.weeklyData;
-                labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                // Calculate the current day index (0 = Monday, 6 = Sunday)
+                const currentDayIndex = (currentDate.getDay() + 6) % 7;
+                
+                // Adjust weeklyData array to start from the current day
+                chartData = [...state.weeklyData.slice(currentDayIndex), ...state.weeklyData.slice(0, currentDayIndex)];
+                labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].slice(currentDayIndex).concat(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].slice(0, currentDayIndex));
                 chartTitle = 'Weekly Consumption';
                 break;
             case 'monthly':
@@ -967,17 +971,19 @@
         loadStateFromLocalStorage(); // Load saved data
         updateStats();              // Update statistics
         
-        // Set initial view based on viewport width
         const viewType = document.getElementById('viewType');
         const datePicker = document.getElementById('datePicker');
         
-        // Initialize view type and date picker visibility
+        // Set initial view and hide/show date picker
         if (viewType.value === 'weekly') {
             datePicker.style.display = 'none';
         } else {
             datePicker.style.display = 'block';
             // Initialize flatpickr with current date
-            datePicker._flatpickr.setDate(new Date());
+            const flatpickrInstance = datePicker._flatpickr;
+            if (flatpickrInstance) {
+                flatpickrInstance.setDate(new Date());
+            }
         }
         
         // Force initial chart update
