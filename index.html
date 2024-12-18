@@ -989,8 +989,13 @@
         } else {
             datePicker.style.display = 'block';
             state.currentView = 'monthly';
-            // Initialize flatpickr with current date
-            datePicker._flatpickr.setDate(new Date());
+
+            // Asegúrate de seleccionar la fecha actual y forzar la actualización en móviles
+            const flatpickrInstance = datePicker._flatpickr;
+            if (!flatpickrInstance.selectedDates[0]) {
+                flatpickrInstance.setDate(new Date()); // Selecciona la fecha actual
+            }
+            updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
         }
         
         updateChart();
