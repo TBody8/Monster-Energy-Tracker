@@ -622,19 +622,15 @@
         const ctx = document.getElementById('consumptionChart').getContext('2d');
         let chartData;
         let labels;
-        let chartTitle = ''; // Add title variable
+        let chartTitle = '';
 
+        // Get selected date from flatpickr
         const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0] || new Date();
-        const currentDate = new Date();
 
         switch (state.currentView) {
             case 'weekly':
-                // Calculate the current day index (0 = Monday, 6 = Sunday)
-                const currentDayIndex = (currentDate.getDay() + 6) % 7;
-                
-                // Adjust weeklyData array to start from the current day
-                chartData = [...state.weeklyData.slice(currentDayIndex), ...state.weeklyData.slice(0, currentDayIndex)];
-                labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].slice(currentDayIndex).concat(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].slice(0, currentDayIndex));
+                chartData = state.weeklyData;
+                labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
                 chartTitle = 'Weekly Consumption';
                 break;
             case 'monthly':
@@ -974,20 +970,17 @@
         const viewType = document.getElementById('viewType');
         const datePicker = document.getElementById('datePicker');
         
-        // Set initial view and hide/show date picker
+        // Set initial view and visibility
         if (viewType.value === 'weekly') {
             datePicker.style.display = 'none';
+            state.currentView = 'weekly';
         } else {
             datePicker.style.display = 'block';
+            state.currentView = 'monthly';
             // Initialize flatpickr with current date
-            const flatpickrInstance = datePicker._flatpickr;
-            if (flatpickrInstance) {
-                flatpickrInstance.setDate(new Date());
-            }
+            datePicker._flatpickr.setDate(new Date());
         }
         
-        // Force initial chart update
-        state.currentView = viewType.value;
         updateChart();
         updateGoalProgress();
     });
