@@ -597,7 +597,7 @@
         }
     }
     
-    // Add new function to handle date-based updates
+    // Update the updateChartWithSelectedDate function
     function updateChartWithSelectedDate(selectedDate) {
         const year = selectedDate.getFullYear();
         const month = selectedDate.getMonth();
@@ -615,16 +615,18 @@
             });
         }
         
+        // Force chart update with new title
         updateChart();
     }
 
+    // Modify the updateChart function to ensure the title updates correctly
     function updateChart(isRemoving = false) {
         const ctx = document.getElementById('consumptionChart').getContext('2d');
         let chartData;
         let labels;
         let chartTitle = '';
 
-        // Get selected date from flatpickr
+        // Get selected date from flatpickr and ensure it's valid
         const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0] || new Date();
 
         switch (state.currentView) {
@@ -636,15 +638,17 @@
             case 'monthly':
                 chartData = state.monthlyData;
                 labels = Array.from({ length: state.monthlyData.length }, (_, i) => i + 1);
-                chartTitle = `${selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' })}`;
+                // Ensure proper month and year display
+                chartTitle = selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' });
                 break;
         }
 
-        // Check if chart needs to be destroyed and recreated (helps with mobile responsiveness)
+        // Destroy existing chart to prevent mobile rendering issues
         if (window.myChart) {
             window.myChart.destroy();
         }
 
+        // Create new chart with updated configuration
         window.myChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -768,7 +772,7 @@
         });
     }
 
-    // Update the view type change handler
+    // Update the view type change handler to ensure proper mobile behavior
     document.getElementById('viewType').addEventListener('change', function(e) {
         const view = e.target.value;
         state.currentView = view;
@@ -776,16 +780,16 @@
 
         if (view === 'weekly') {
             document.getElementById('datePicker').style.display = 'none';
-            // Force chart update for weekly view
-            state.currentView = 'weekly';
             updateChart();
         } else {
             document.getElementById('datePicker').style.display = 'block';
-            updateCalendarView(flatpickrInstance);
-            // If there's no selected date, default to current month
+            
+            // Ensure we have a valid date selected
             if (!flatpickrInstance.selectedDates[0]) {
                 flatpickrInstance.setDate(new Date());
             }
+            
+            // Force update with current selection
             updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
         }
     });
