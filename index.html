@@ -1,5 +1,5 @@
 <html><head><base href=".">
-    <title>Monster Energy Tracker PRO</title>
+    <title>Monster Energy Tracker</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="Icons/fav.jpg">
     <style>
     :root {
         --monster-green: #28641c;
@@ -46,7 +47,7 @@
     
     @keyframes energyPulse {
         0% { text-shadow: 0 0 10px var(--monster-green); }
-        50% { text-shadow: 0 0 20px var(--monster-green), 0 0 30px var(--monster-green), 0 0 40px var(--monster-green); }
+        50% { text-shadow: 0 0 20px var(--monster-green), 0 0 30px var(--monster-green), 0 0 40px var(--monster-green);; }
         100% { text-shadow: 0 0 10px var(--monster-green); }
     }
 
@@ -434,7 +435,7 @@
 
     .promotion-text {
         font-family: 'GreenEnergy', sans-serif;
-        font-size: 5rem;
+        font-size: 1rem;
         color: var(--monster-green);
         opacity: 0.9;
     }
@@ -555,7 +556,7 @@
         allTimeTotal: 0,
         weeklyGoal: 0,
         consumptionHistory: [],
-        currentView: 'weekly'  // Make sure weekly is the default view
+        currentView: 'weekly'
     };
 
     document.getElementById('setGoal').addEventListener('click', () => {
@@ -584,9 +585,9 @@
             updateCalendarView(instance); // Configura la vista al cargar
         },
         onChange: function(selectedDates) {
-            if (selectedDates[0]) {
-                updateChartWithSelectedDate(selectedDates[0]); // Actualizar gráfica
-            }
+            if (selectedDates.length > 0) {
+            updateChartWithSelectedDate(selectedDates[0]); // Actualizar el gráfico con la nueva fecha seleccionada
+        }
         }
     });
 
@@ -600,7 +601,7 @@
         }
     }
     
-    // Add new function to handle date-based updates
+    // Update the updateChartWithSelectedDate function
     function updateChartWithSelectedDate(selectedDate) {
         const year = selectedDate.getFullYear();
         const month = selectedDate.getMonth();
@@ -618,16 +619,18 @@
             });
         }
         
+        // Force chart update with new title
         updateChart();
     }
 
+    // Modify the updateChart function to ensure the title updates correctly
     function updateChart(isRemoving = false) {
         const ctx = document.getElementById('consumptionChart').getContext('2d');
         let chartData;
         let labels;
-        let chartTitle = ''; // Add title variable
+        let chartTitle = '';
 
-        // Get selected date from flatpickr
+        // Get selected date from flatpickr and ensure it's valid
         const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0] || new Date();
 
         switch (state.currentView) {
@@ -639,10 +642,13 @@
             case 'monthly':
                 chartData = state.monthlyData;
                 labels = Array.from({ length: state.monthlyData.length }, (_, i) => i + 1);
-                chartTitle = `${selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' })}`;
+                // Ensure proper month and year display
+                chartTitle = selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' });
                 break;
         }
 
+        
+        // Create new chart with updated configuration
         const chartConfig = {
             type: 'line',
             data: {
@@ -728,7 +734,7 @@
                 scales: {
                     y: {
                         beginAtZero: true,
-                        suggestedMax: 5,
+                        suggestedMax: 3,
                         grid: {
                             color: 'rgba(40, 100, 28, 0.1)',
                             drawBorder: false
@@ -737,9 +743,7 @@
                             color: '#ffffff',
                             padding: 10,
                             font: { size: 12 },
-                            callback: function (value) {
-                                return Math.floor(value);
-                            }
+                            stepSize: 1,
                         }
                     },
                     x: {
@@ -763,7 +767,7 @@
                     }
                 }
             }
-        };
+        }
 
         if (!window.myChart) {
             window.myChart = new Chart(ctx, chartConfig);
@@ -775,7 +779,7 @@
         }
     }
 
-    // Update the view type change handler
+    // Update the view type change handler to ensure proper mobile behavior
     document.getElementById('viewType').addEventListener('change', function(e) {
         const view = e.target.value;
         state.currentView = view;
@@ -784,15 +788,42 @@
         if (view === 'weekly') {
             document.getElementById('datePicker').style.display = 'none';
             updateChart();
-        } else {
+        } else if(view === 'monthly') {
             document.getElementById('datePicker').style.display = 'block';
-            updateCalendarView(flatpickrInstance);
-            if (flatpickrInstance.selectedDates[0]) {
+            // Detectar si es un dispositivo móvil
+            if (isMobileDevice()) {
+                // Asegúrate de establecer siempre una fecha
+                if (!flatpickrInstance.selectedDates[0]) {
+                    flatpickrInstance.setDate(new Date());
+                }
                 updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
+            } else {
+                if (!flatpickrInstance.selectedDates[0]) {
+                    flatpickrInstance.setDate(new Date());
+                }
+                updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
+            }
+
+        } else{
+            document.getElementById('datePicker').style.display = 'block';
+            
+            if (isMobileDevice()) {
+                flatpickrInstance.setDate(new Date());
+                updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
+            } else {
+                // Asegurarnos de tener una fecha válida seleccionada
+                if (!flatpickrInstance.selectedDates[0]) {
+                    flatpickrInstance.setDate(new Date());
+                }
+
+                updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
             }
         }
     });
-    
+
+    function isMobileDevice() {
+        return /Mobi|Android/i.test(navigator.userAgent);
+    }
     function updateStats() {
     // Actualiza las estadísticas generales
         document.getElementById('todayCount').innerText = state.todayCount;
@@ -960,22 +991,38 @@
     }
 
     function loadStateFromLocalStorage() {
-            const savedState = localStorage.getItem('monsterTrackerState');
-            if (savedState) {
-                Object.assign(state, JSON.parse(savedState));
-            }
+        const savedState = localStorage.getItem('monsterTrackerState');
+        if (savedState) {
+            Object.assign(state, JSON.parse(savedState));
         }
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-        loadStateFromLocalStorage(); // Cargar datos guardados
-        updateStats();              // Actualizar estadísticas
-        updateChart();              // Actualizar gráfico
-        updateGoalProgress();       // Actualizar progreso de la meta
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStateFromLocalStorage(); // Load saved data
+        updateStats();              // Update statistics
         
-        // Hide date picker initially since weekly view is the default
-        document.getElementById('datePicker').style.display = 'none';
-    });
+        const viewType = document.getElementById('viewType');
+        const datePicker = document.getElementById('datePicker');
+        
+        // Set initial view and visibility
+        if (viewType.value === 'weekly') {
+            datePicker.style.display = 'none';
+            state.currentView = 'weekly';
+        } else {
+            datePicker.style.display = 'block';
+            state.currentView = 'monthly';
 
+            // Asegúrate de seleccionar la fecha actual y forzar la actualización en móviles
+            const flatpickrInstance = datePicker._flatpickr;
+            if (!flatpickrInstance.selectedDates[0]) {
+                flatpickrInstance.setDate(new Date()); // Selecciona la fecha actual
+            }
+            updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
+        }
+        
+        updateChart();
+        updateGoalProgress();
+    });
 
     </script>
     </body></html>
