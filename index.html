@@ -644,13 +644,9 @@
                 break;
         }
 
-        // Destroy existing chart to prevent mobile rendering issues
-        if (window.myChart) {
-            window.myChart.destroy();
-        }
-
+        
         // Create new chart with updated configuration
-        window.myChart = new Chart(ctx, {
+        const chartConfig = {
             type: 'line',
             data: {
                 labels: labels,
@@ -770,7 +766,16 @@
                     }
                 }
             }
-        });
+        }
+
+        if (!window.myChart) {
+            window.myChart = new Chart(ctx, chartConfig);
+        } else {
+            window.myChart.data.labels = labels;
+            window.myChart.data.datasets[0].data = chartData;
+            window.myChart.options.plugins.title.text = chartTitle;
+            window.myChart.update();
+        }
     }
 
     // Update the view type change handler to ensure proper mobile behavior
