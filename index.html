@@ -708,6 +708,7 @@
 
                             const dataPoint = context.tooltip.dataPoints[0];
                             const date = labels[dataPoint.dataIndex];
+                            const date2 = dataPoint.dataIndex +1;
                             const value = dataPoint.raw;
 
                             tooltip.style.opacity = 1;
@@ -720,7 +721,7 @@
                                     dateLabel = `${date}`;
                                     break;
                                 case 'monthly':
-                                    dateLabel = `${selectedDate.toLocaleString('default', { month: 'long' })} ${date}`;
+                                    dateLabel = `${selectedDate.toLocaleString('default', { month: 'long' })} ${date2}`;
                                     break;
                             }
 
