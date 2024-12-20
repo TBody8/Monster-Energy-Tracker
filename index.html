@@ -1019,10 +1019,10 @@
 
         gsap.fromTo(
             warningContainer,
-            { opacity: 0, scale: 0.8 }, // Inicia pequeño y transparente
+            { opacity: 0, scale: 0.1 }, // Inicia pequeño y transparente
             {
                 opacity: 1,
-                scale: 1,
+                scale: 1.1,
                 duration: 0.5,
                 ease: 'bounce.out', // Efecto de rebote
             }
@@ -1031,8 +1031,8 @@
         // Agregar un destello dinámico con GSAP
         gsap.to(warningContainer, {
             keyframes: [
-                { textShadow: '0 0 10px rgba(255, 255, 255, 0.8)', duration: 0.3, ease: 'power1.inOut' },
-                { textShadow: '0 0 0 rgba(0, 0, 0, 0)', duration: 0.3 },
+                { textShadow: '0 0 10px rgba(0, 0, 0, 0.9)', duration: 0.3, ease: 'power1.inOut' },
+                { textShadow: '0 0 0 rgba(0, 0, 0, 0)', duration: 2 },
             ],
         });
 
