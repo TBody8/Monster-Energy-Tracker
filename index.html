@@ -839,7 +839,7 @@
             return uniqueDays;
         }, new Set()).size;
 
-        const averagePerDay = daysWithData > 0 ? (state.allTimeTotal / daysWithData).toFixed(2) : 0;
+        const averagePerDay = daysWithData > 0 ? (state.allTimeTotal / daysWithData).toFixed(1) : 0;
 
         // Actualiza el elemento del DOM
         document.getElementById('averagePerDay').innerText = averagePerDay;
