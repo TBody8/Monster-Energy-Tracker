@@ -491,7 +491,12 @@
         <div class="button-container">
             <button class="btn btn-primary" id="addMonster">Add Monster</button>
             <button class="btn btn-secondary" id="removeMonster">Remove Monster</button>
+            <button class="btn btn-secondary" id="prevDay">Previous Day</button>
+            <button class="btn btn-secondary" id="nextDay">Next Day</button>
+            
         </div>
+        <p id="currentDate" style="text-align: center; color: var(--monster-green);">Date: Today</p>
+
         
         <div class="stats-grid">
             <div class="stat-card">
@@ -552,6 +557,7 @@
     <script>
     const state = {
         todayCount: 0,
+        lastUpdatedDate: new Date().toDateString(),
         weeklyData: [0, 0, 0, 0, 0, 0, 0],
         monthlyData: Array(30).fill(0),
         allTimeTotal: 0,
@@ -916,12 +922,70 @@
         document.getElementById('weeklyGoalDisplay').innerText = goal > 0 ? goal : "Not Set";
     }
 
+    let simulatedDate = new Date(); // Fecha simulada
+
+    document.getElementById('nextDay').addEventListener('click', () => {
+        // Avanzar un día en la fecha simulada
+        simulatedDate.setDate(simulatedDate.getDate() + 1);
+
+        const today = simulatedDate.toDateString();
+
+        // Busca en el historial las entradas correspondientes a este día
+        const todayEntries = state.consumptionHistory.filter(entry => {
+            const entryDate = new Date(entry.date).toDateString();
+            return entryDate === today;
+        });
+
+        // Actualiza el todayCount sumando los valores del historial
+        state.todayCount = todayEntries.reduce((sum, entry) => sum + entry.count, 0);
+
+        // Guardar la nueva fecha simulada
+        state.lastUpdatedDate = simulatedDate.toDateString();
+
+        // Actualizar la interfaz
+        updateStats();
+        updateGoalProgress();
+        saveStateToLocalStorage();
+        updateSimulatedDateDisplay();
+        console.log(`Simulated date is now: ${simulatedDate.toDateString()}`); // Depuración
+    });
+
+    function updateSimulatedDateDisplay() {
+        document.getElementById('currentDate').innerText = `Date: ${simulatedDate.toDateString()}`;
+    }
+
+    document.getElementById('prevDay').addEventListener('click', () => {
+        // Retroceder un día en la fecha simulada
+        simulatedDate.setDate(simulatedDate.getDate() - 1);
+
+        const today = simulatedDate.toDateString();
+
+        // Busca en el historial las entradas correspondientes a este día
+        const todayEntries = state.consumptionHistory.filter(entry => {
+            const entryDate = new Date(entry.date).toDateString();
+            return entryDate === today;
+        });
+
+        // Actualiza el todayCount sumando los valores del historial
+        state.todayCount = todayEntries.reduce((sum, entry) => sum + entry.count, 0);
+
+        // Guardar la nueva fecha simulada
+        state.lastUpdatedDate = simulatedDate.toDateString();
+
+        // Actualizar la interfaz
+        updateStats();
+        updateGoalProgress();
+        saveStateToLocalStorage();
+        updateSimulatedDateDisplay();
+        console.log(`Simulated date is now: ${simulatedDate.toDateString()}`); // Depuración
+    });
+
     document.getElementById('addMonster').addEventListener('click', (e) => {
         createRipple(e);
 
         const currentDate = new Date();
-        const today = (currentDate.getDay() + 6) % 7;
-        const todayDate = currentDate.getDate() - 1;
+        const today = (simulatedDate.getDay() + 6) % 7;
+        const todayDate = simulatedDate.getDate() - 1;
 
         state.todayCount++;
         state.allTimeTotal++;
@@ -934,7 +998,7 @@
         }
         
         state.consumptionHistory.push({
-            date: currentDate.toISOString(),
+            date: simulatedDate.toISOString(),
             count: 1
         });
 
@@ -956,8 +1020,8 @@
         createRipple(e);
         if (state.todayCount > 0) {
             const currentDate = new Date();
-            const today = (currentDate.getDay() + 6) % 7;
-            const todayDate = currentDate.getDate() - 1;
+            const today = (simulatedDate.getDay() + 6) % 7;
+            const todayDate = simulatedDate.getDate() - 1;
 
             state.todayCount = Math.max(0, state.todayCount - 1);
             state.allTimeTotal = Math.max(0, state.allTimeTotal - 1);
@@ -1050,16 +1114,21 @@
         }, 1000);
     }
 
-
-
-
     function saveStateToLocalStorage() {
+        state.lastUpdatedDate = new Date().toDateString();
         localStorage.setItem('monsterTrackerState', JSON.stringify(state));
     }
 
     function loadStateFromLocalStorage() {
         const savedState = localStorage.getItem('monsterTrackerState');
         if (savedState) {
+            const parsedState = JSON.parse(savedState);
+            const currentDate = simulatedDate.toDateString();
+            // Reinicia el contador si ha cambiado el día
+            if (parsedState.lastUpdatedDate !== currentDate) {
+                parsedState.todayCount = 0;
+                parsedState.lastUpdatedDate = currentDate;
+            }
             Object.assign(state, JSON.parse(savedState));
         }
     }
