@@ -482,7 +482,7 @@
               <p class="promotion-text" style="font-size: 1.5rem;">Designed by Diego.J</p>
               <a href="https://www.instagram.com/diiegoo_.06/" target="_blank" class="instagram-link">
                 <svg class="instagram-icon" viewBox="0 0 24 24" width="24" height="24">
-                  <path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"></path>
+                  <path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
                 </svg>
               </a>
             </div>
@@ -500,7 +500,7 @@
         
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>Today's Count</h3>
+                <h3>Today&apos;s Count</h3>
                 <p id="todayCount" class="stat-value">0</p>
             </div>
             <div class="stat-card">
@@ -554,611 +554,558 @@
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script>
-    const state = {
-        todayCount: 0,
-        lastUpdatedDate: new Date().toDateString(),
-        weeklyData: [0, 0, 0, 0, 0, 0, 0],
-        monthlyData: Array(30).fill(0),
-        allTimeTotal: 0,
-        weeklyGoal: 0,
-        consumptionHistory: [],
-        currentView: 'weekly',
-    };
-    
-    document.getElementById('setGoal').addEventListener('click', () => {
-        const goalInput = document.getElementById('weeklyGoal');
-        const newGoal = parseInt(goalInput.value);
-
-        if (isNaN(newGoal) || newGoal <= 0) {
-            alert("Please enter a valid goal greater than 0.");
-            return;
-        }
-
-        state.weeklyGoal = newGoal; // Almacena el objetivo en el estado
-        goalInput.value = ""; // Limpia el campo de entrada
-
-        updateGoalProgress(); // Actualiza la barra de progreso y el estado
-        saveStateToLocalStorage();
+    <script>const state = {
+  todayCount: 0,
+  lastUpdatedDate: new Date().toDateString(),
+  weeklyData: [0, 0, 0, 0, 0, 0, 0],
+  monthlyData: Array(30).fill(0),
+  allTimeTotal: 0,
+  weeklyGoal: 0,
+  consumptionHistory: [],
+  currentView: 'weekly'
+};
+document.getElementById('setGoal').addEventListener('click', () => {
+  const goalInput = document.getElementById('weeklyGoal');
+  const newGoal = parseInt(goalInput.value);
+  if (isNaN(newGoal) || newGoal <= 0) {
+    alert("Please enter a valid goal greater than 0.");
+    return;
+  }
+  state.weeklyGoal = newGoal;
+  goalInput.value = "";
+  updateGoalProgress();
+  saveStateToLocalStorage();
+});
+flatpickr("#datePicker", {
+  mode: "single",
+  enableTime: false,
+  dateFormat: "F Y",
+  defaultDate: new Date(),
+  plugins: [new monthSelectPlugin({
+    shorthand: true,
+    dateFormat: "F Y"
+  })],
+  onReady: function (selectedDates, dateStr, instance) {
+    updateCalendarView(instance);
+  },
+  onChange: function (selectedDates) {
+    if (selectedDates.length > 0) {
+      updateChartWithSelectedDate(selectedDates[0]);
+    }
+  }
+});
+function updateCalendarView(instance) {
+  const view = document.getElementById('viewType').value;
+  if (view === 'monthly') {
+    instance.set("plugins", [new monthSelectPlugin({
+      shorthand: true,
+      dateFormat: "F Y"
+    })]);
+    instance.set("dateFormat", "F Y");
+  }
+}
+function updateChartWithSelectedDate(selectedDate) {
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth();
+  if (state.currentView === 'monthly') {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    state.monthlyData = Array(daysInMonth).fill(0);
+    state.consumptionHistory.forEach(entry => {
+      const entryDate = new Date(entry.date);
+      if (entryDate.getMonth() === month && entryDate.getFullYear() === year) {
+        state.monthlyData[entryDate.getDate() - 1] += entry.count;
+      }
     });
-    
-    flatpickr("#datePicker", {
-        mode: "single",
-        enableTime: false,
-        dateFormat: "F Y", // Valor por defecto: Mes y Año
-        defaultDate: new Date(),
-        plugins: [new monthSelectPlugin({ shorthand: true, dateFormat: "F Y" })], // Modo mes
-        onReady: function(selectedDates, dateStr, instance) {
-            updateCalendarView(instance); // Configura la vista al cargar
+  }
+  updateChart();
+}
+function updateChart(isRemoving = false) {
+  const ctx = document.getElementById('consumptionChart').getContext('2d');
+  let chartData;
+  let labels;
+  let chartTitle = '';
+  const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0] || new Date();
+  switch (state.currentView) {
+    case 'weekly':
+      chartData = [...state.weeklyData];
+      labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      chartTitle = 'Weekly Consumption';
+      break;
+    case 'monthly':
+      chartData = [...state.monthlyData];
+      labels = Array.from({
+        length: state.monthlyData.length
+      }, (_, i) => i + 1);
+      chartTitle = selectedDate.toLocaleString('default', {
+        month: 'long',
+        year: 'numeric'
+      });
+      break;
+  }
+  if (!window.myChart) {
+    window.myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Consumption',
+          data: chartData,
+          borderColor: '#28641c',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          backgroundColor: 'rgba(40, 100, 28, 0.1)',
+          pointBackgroundColor: '#28641c',
+          pointBorderColor: '#ffffff',
+          pointHoverRadius: 8,
+          pointHoverBackgroundColor: '#28641c',
+          pointHoverBorderColor: '#ffffff',
+          pointHoverBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 1500,
+          easing: isRemoving ? 'easeOutQuart' : 'easeInOutQuart'
         },
-        onChange: function(selectedDates) {
-            if (selectedDates.length > 0) {
-            updateChartWithSelectedDate(selectedDates[0]); // Actualizar el gráfico con la nueva fecha seleccionada
-        }
-        }
-    });
-
-    function updateCalendarView(instance) {
-        const view = document.getElementById('viewType').value;
-
-        if (view === 'monthly') {
-            // Configurar para mostrar sólo meses
-            instance.set("plugins", [new monthSelectPlugin({ shorthand: true, dateFormat: "F Y" })]);
-            instance.set("dateFormat", "F Y");
-        }
-    }
-    
-    // Update the updateChartWithSelectedDate function
-    function updateChartWithSelectedDate(selectedDate) {
-        const year = selectedDate.getFullYear();
-        const month = selectedDate.getMonth();
-        
-        if (state.currentView === 'monthly') {
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            state.monthlyData = Array(daysInMonth).fill(0);
-            
-            // Fill with actual consumption data from history
-            state.consumptionHistory.forEach(entry => {
-                const entryDate = new Date(entry.date);
-                if (entryDate.getMonth() === month && entryDate.getFullYear() === year) {
-                    state.monthlyData[entryDate.getDate() - 1] += entry.count;
-                }
-            });
-        }
-        
-        // Force chart update with new title
-        updateChart();
-    }
-
-    // Modify the updateChart function to ensure the title updates correctly
-    function updateChart(isRemoving = false) {
-        const ctx = document.getElementById('consumptionChart').getContext('2d');
-        let chartData;
-        let labels;
-        let chartTitle = '';
-
-        // Get selected date from flatpickr and ensure it's valid
-        const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0] || new Date();
-
-        switch (state.currentView) {
-            case 'weekly':
-                chartData = state.weeklyData;
-                labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                chartTitle = 'Weekly Consumption';
-                break;
-            case 'monthly':
-                chartData = state.monthlyData;
-                labels = Array.from({ length: state.monthlyData.length }, (_, i) => i + 1);
-                // Ensure proper month and year display
-                chartTitle = selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-                break;
-        }
-
-        
-        // Create new chart with updated configuration
-        const chartConfig = {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Consumption',
-                    data: chartData,
-                    borderColor: '#28641c',
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: true,
-                    backgroundColor: 'rgba(40, 100, 28, 0.1)',
-                    pointBackgroundColor: '#28641c',
-                    pointBorderColor: '#ffffff',
-                    pointHoverRadius: 8,
-                    pointHoverBackgroundColor: '#28641c',
-                    pointHoverBorderColor: '#ffffff',
-                    pointHoverBorderWidth: 2
-                }]
+        interaction: {
+          intersect: false,
+          mode: 'nearest',
+          axis: 'x'
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          title: {
+            display: true,
+            text: chartTitle,
+            color: '#ffffff',
+            font: {
+              size: 16,
+              family: 'Inter',
+              weight: 'bold'
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: {
-                    duration: 1500,
-                    easing: isRemoving ? 'easeOutQuart' : 'easeInOutQuart',
-                },
-                interaction: {
-                    intersect: false,
-                    mode: 'nearest',
-                    axis: 'x'
-                },
-                plugins: {
-                    legend: { display: false },
-                    title: {
-                        display: true,
-                        text: chartTitle,
-                        color: '#ffffff',
-                        font: {
-                            size: 16,
-                            family: 'Inter',
-                            weight: 'bold'
-                        },
-                        padding: {
-                            top: 10,
-                            bottom: 20
-                        }
-                    },
-                    tooltip: {
-                        enabled: false,
-                        external: function (context) {
-                            const tooltip = document.getElementById('chartTooltip');
-                            if (context.tooltip.opacity === 0) {
-                                tooltip.style.opacity = 0;
-                                return;
-                            }
-
-                            const dataPoint = context.tooltip.dataPoints[0];
-                            const date = labels[dataPoint.dataIndex];
-                            const date2 = dataPoint.dataIndex +1;
-                            const value = dataPoint.raw;
-
-                            tooltip.style.opacity = 1;
-                            tooltip.style.left = context.tooltip.caretX + 'px';
-                            tooltip.style.top = context.tooltip.caretY + 'px';
-
-                            let dateLabel = '';
-                            switch (state.currentView) {
-                                case 'weekly':
-                                    dateLabel = `${date}`;
-                                    break;
-                                case 'monthly':
-                                    dateLabel = `${selectedDate.toLocaleString('default', { month: 'long' })} ${date2}`;
-                                    break;
-                            }
-
-                            tooltip.innerHTML = `
-                                <div style="font-size: 0.8rem; color: #28641c;">${dateLabel}</div>
-                                <div style="font-size: 1.1rem; margin-top: 4px;">${value} drinks</div>
-                            `;
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        suggestedMax: 3,
-                        grid: {
-                            color: 'rgba(40, 100, 28, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#ffffff',
-                            padding: 10,
-                            font: { size: 12 },
-                            stepSize: 1,
-                        }
-                    },
-                    x: {
-                        grid: {
-                            color: 'rgba(40, 100, 28, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#ffffff',
-                            padding: 10,
-                            font: { size: 12 }
-                        }
-                    }
-                },
-                elements: {
-                    line: { borderWidth: 3 },
-                    point: {
-                        radius: 4,
-                        hitRadius: 10,
-                        hoverRadius: 6
-                    }
-                }
+            padding: {
+              top: 10,
+              bottom: 20
             }
-        }
-
-        if (!window.myChart) {
-            window.myChart = new Chart(ctx, chartConfig);
-        } else {
-            window.myChart.data.labels = labels;
-            window.myChart.data.datasets[0].data = chartData;
-            window.myChart.options.plugins.title.text = chartTitle;
-            window.myChart.update();
-        }
-    }
-
-    // Update the view type change handler to ensure proper mobile behavior
-    document.getElementById('viewType').addEventListener('change', function(e) {
-        const view = e.target.value;
-        state.currentView = view;
-        const flatpickrInstance = document.querySelector('#datePicker')._flatpickr;
-
-        if (view === 'weekly') {
-            document.getElementById('datePicker').style.display = 'none';
-            updateChart();
-        } else if(view === 'monthly') {
-            document.getElementById('datePicker').style.display = 'block';
-            // Detectar si es un dispositivo móvil
-            if (isMobileDevice()) {
-                // Asegúrate de establecer siempre una fecha
-                if (!flatpickrInstance.selectedDates[0]) {
-                    flatpickrInstance.setDate(new Date());
-                }
-                updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
-            } else {
-                if (!flatpickrInstance.selectedDates[0]) {
-                    flatpickrInstance.setDate(new Date());
-                }
-                updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
+          },
+          tooltip: {
+            enabled: false,
+            external: function (context) {
+              const tooltip = document.getElementById('chartTooltip');
+              if (context.tooltip.opacity === 0) {
+                tooltip.style.opacity = 0;
+                return;
+              }
+              const dataPoint = context.tooltip.dataPoints[0];
+              const date = labels[dataPoint.dataIndex];
+              const date2 = dataPoint.dataIndex + 1;
+              const value = dataPoint.raw;
+              tooltip.style.opacity = 1;
+              tooltip.style.left = context.tooltip.caretX + 'px';
+              tooltip.style.top = context.tooltip.caretY + 'px';
+              let dateLabel = '';
+              switch (state.currentView) {
+                case 'weekly':
+                  dateLabel = `${date}`;
+                  break;
+                case 'monthly':
+                  dateLabel = `${selectedDate.toLocaleString('default', {
+                    month: 'long'
+                  })} ${date2}`;
+                  break;
+              }
+              tooltip.innerHTML = `
+                                    <div style="font-size: 0.8rem; color: #28641c;">${dateLabel}</div>
+                                    <div style="font-size: 1.1rem; margin-top: 4px;">${value} drinks</div>
+                                `;
             }
-
-        } else{
-            document.getElementById('datePicker').style.display = 'block';
-            
-            if (isMobileDevice()) {
-                flatpickrInstance.setDate(new Date());
-                updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
-            } else {
-                // Asegurarnos de tener una fecha válida seleccionada
-                if (!flatpickrInstance.selectedDates[0]) {
-                    flatpickrInstance.setDate(new Date());
-                }
-
-                updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            suggestedMax: 3,
+            grid: {
+              color: 'rgba(40, 100, 28, 0.1)',
+              drawBorder: false
+            },
+            ticks: {
+              color: '#ffffff',
+              padding: 10,
+              font: {
+                size: 12
+              },
+              stepSize: 1
             }
+          },
+          x: {
+            grid: {
+              color: 'rgba(40, 100, 28, 0.1)',
+              drawBorder: false
+            },
+            ticks: {
+              color: '#ffffff',
+              padding: 10,
+              font: {
+                size: 12
+              }
+            }
+          }
+        },
+        elements: {
+          line: {
+            borderWidth: 3
+          },
+          point: {
+            radius: 4,
+            hitRadius: 10,
+            hoverRadius: 6
+          }
         }
+      }
     });
-
-    function isMobileDevice() {
-        return /Mobi|Android/i.test(navigator.userAgent);
+  } else {
+    window.myChart.data.labels = labels;
+    window.myChart.data.datasets[0].data = chartData;
+    window.myChart.options.plugins.title.text = chartTitle;
+    window.myChart.update();
+  }
+  console.log("Gráfico actualizado con datos:", chartData);
+}
+document.getElementById('viewType').addEventListener('change', function (e) {
+  const view = e.target.value;
+  state.currentView = view;
+  const flatpickrInstance = document.querySelector('#datePicker')._flatpickr;
+  if (view === 'weekly') {
+    document.getElementById('datePicker').style.display = 'none';
+    updateChart();
+  } else if (view === 'monthly') {
+    document.getElementById('datePicker').style.display = 'block';
+    if (isMobileDevice()) {
+      if (!flatpickrInstance.selectedDates[0]) {
+        flatpickrInstance.setDate(new Date());
+      }
+      updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
+    } else {
+      if (!flatpickrInstance.selectedDates[0]) {
+        flatpickrInstance.setDate(new Date());
+      }
+      updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
     }
-    function updateStats() {
-    // Actualiza las estadísticas generales
-        document.getElementById('todayCount').innerText = state.todayCount;
-        document.getElementById('allTimeTotal').innerText = state.allTimeTotal;
-
-        // Cálculo del promedio diario
-        const daysWithData = state.consumptionHistory.reduce((uniqueDays, entry) => {
-            const date = new Date(entry.date).toDateString();
-            uniqueDays.add(date);
-            return uniqueDays;
-        }, new Set()).size;
-
-        const averagePerDay = daysWithData > 0 ? (state.allTimeTotal / daysWithData).toFixed(1) : 0;
-
-        // Actualiza el elemento del DOM
-        document.getElementById('averagePerDay').innerText = averagePerDay;
+  } else {
+    document.getElementById('datePicker').style.display = 'block';
+    if (isMobileDevice()) {
+      flatpickrInstance.setDate(new Date());
+      updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
+    } else {
+      if (!flatpickrInstance.selectedDates[0]) {
+        flatpickrInstance.setDate(new Date());
+      }
+      updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
     }
-
-    function createRipple(e) {
-    // Función vacía temporalmente para evitar errores
+  }
+});
+function isMobileDevice() {
+  return /Mobi|Android/i.test(navigator.userAgent);
+}
+function updateStats() {
+  document.getElementById('todayCount').innerText = state.todayCount;
+  document.getElementById('allTimeTotal').innerText = state.allTimeTotal;
+  const daysWithData = state.consumptionHistory.reduce((uniqueDays, entry) => {
+    const date = new Date(entry.date).toDateString();
+    uniqueDays.add(date);
+    return uniqueDays;
+  }, new Set()).size;
+  const averagePerDay = daysWithData > 0 ? (state.allTimeTotal / daysWithData).toFixed(1) : 0;
+  document.getElementById('averagePerDay').innerText = averagePerDay;
+}
+function createRipple(e) {}
+function triggerConfetti() {
+  confetti({
+    particleCount: 200,
+    angle: 90,
+    spread: 150,
+    origin: {
+      x: 0.5,
+      y: 0.5
+    },
+    colors: ['#ff0', '#0f0', '#00f', '#f00', '#ff00ff']
+  });
+}
+function displayCelebrationMessage() {
+  const messageContainer = document.createElement('div');
+  messageContainer.id = 'celebrationMessage';
+  messageContainer.style.position = 'fixed';
+  messageContainer.style.top = '50%';
+  messageContainer.style.left = '50%';
+  messageContainer.style.transform = 'translate(-50%, -50%)';
+  messageContainer.style.padding = '20px';
+  messageContainer.style.backgroundColor = 'rgb(33, 99, 23)';
+  messageContainer.style.color = '#fff';
+  messageContainer.style.fontSize = '1.5rem';
+  messageContainer.style.fontFamily = 'Inter, sans-serif';
+  messageContainer.style.fontWeight = '100';
+  messageContainer.style.borderRadius = '15px';
+  messageContainer.style.textAlign = 'center';
+  messageContainer.style.boxShadow = '0 0 15px rgb(71, 71, 71)';
+  messageContainer.innerHTML = "🎉 FELICIDADES!!<br>A generar más piedra en los riñones 🎉";
+  document.body.appendChild(messageContainer);
+  setTimeout(() => {
+    messageContainer.style.transition = 'opacity 1s';
+    messageContainer.style.opacity = 0;
+    setTimeout(() => document.body.removeChild(messageContainer), 1000);
+  }, 5000);
+}
+function updateGoalProgress() {
+  const currentWeekCount = state.weeklyData.reduce((sum, day) => sum + day, 0);
+  const goal = state.weeklyGoal;
+  const progressPercentage = goal > 0 ? Math.min(currentWeekCount / goal * 100, 100) : 0;
+  document.getElementById('goalProgressBar').style.width = `${progressPercentage}%`;
+  let statusText = "";
+  if (goal === 0) {
+    statusText = "Goal not set. Set your weekly goal!";
+  } else if (currentWeekCount >= goal) {
+    statusText = "Goal reached! Great job!";
+    triggerConfetti();
+    displayCelebrationMessage();
+  } else {
+    const remaining = goal - currentWeekCount;
+    statusText = `${remaining} drinks left to reach your goal this week.`;
+  }
+  document.getElementById('goalStatus').innerText = statusText;
+  document.getElementById('currentWeekCount').innerText = currentWeekCount;
+  document.getElementById('weeklyGoalDisplay').innerText = goal > 0 ? goal : "Not Set";
+}
+function updateSimulatedDayData() {
+  const currentDateStr = simulatedDate.toISOString().split('T')[0];
+  if (isNewWeek(state.lastUpdatedDate, simulatedDate)) {
+    console.log("Nueva semana detectada. Reiniciando datos semanales.");
+    state.weeklyData = [0, 0, 0, 0, 0, 0, 0];
+    state.todayCount = 0;
+    if (window.myChart) {
+      window.myChart.data.datasets[0].data = state.weeklyData;
+      window.myChart.update('none');
     }
-
-    function triggerConfetti() {
-        // Activar el confeti
-        confetti({
-            particleCount: 200,
-            angle: 90,
-            spread: 150,
-            origin: { x: 0.5, y: 0.5 },  // Centrado en la pantalla
-            colors: ['#ff0', '#0f0', '#00f', '#f00', '#ff00ff']
-        });
+  }
+  const dailyHistory = state.consumptionHistory.filter(entry => entry.date.startsWith(currentDateStr));
+  state.todayCount = dailyHistory.reduce((sum, entry) => sum + entry.count, 0);
+  state.lastUpdatedDate = simulatedDate.toDateString();
+  updateStats();
+  updateGoalProgress();
+  updateChart(false);
+  updateSimulatedDateDisplay();
+  saveStateToLocalStorage();
+}
+let simulatedDate = new Date();
+document.getElementById('nextDay').addEventListener('click', () => {
+  const previousDate = new Date(simulatedDate);
+  simulatedDate.setDate(simulatedDate.getDate() + 1);
+  if (isNewWeek(previousDate, simulatedDate)) {
+    state.weeklyData = [0, 0, 0, 0, 0, 0, 0];
+    if (window.myChart) {
+      window.myChart.data.datasets[0].data = state.weeklyData;
+      window.myChart.update('none');
     }
-
-    function displayCelebrationMessage() {
-        // Crear un mensaje de celebración dinámicamente
-        const messageContainer = document.createElement('div');
-        messageContainer.id = 'celebrationMessage';
-        messageContainer.style.position = 'fixed';
-        messageContainer.style.top = '50%';
-        messageContainer.style.left = '50%';
-        messageContainer.style.transform = 'translate(-50%, -50%)';
-        messageContainer.style.padding = '20px';
-        messageContainer.style.backgroundColor = 'rgb(33, 99, 23)';
-        messageContainer.style.color = '#fff';
-        messageContainer.style.fontSize = '1.5rem';
-        messageContainer.style.fontFamily = 'Inter, sans-serif';
-        messageContainer.style.fontWeight = '100';
-        messageContainer.style.borderRadius = '15px';
-        messageContainer.style.textAlign = 'center';
-        messageContainer.style.boxShadow = '0 0 15px rgb(71, 71, 71)';
-        messageContainer.innerHTML = "🎉 FELICIDADES!!<br>A generar más piedra en los riñones 🎉";
-
-        // Agregar el mensaje al DOM
-        document.body.appendChild(messageContainer);
-
-        // Eliminar el mensaje después de 5 segundos
-        setTimeout(() => {
-            messageContainer.style.transition = 'opacity 1s';
-            messageContainer.style.opacity = 0;
-            setTimeout(() => document.body.removeChild(messageContainer), 1000);
-        }, 5000);
+  }
+  const today = simulatedDate.toDateString();
+  const todayEntries = state.consumptionHistory.filter(entry => {
+    const entryDate = new Date(entry.date).toDateString();
+    return entryDate === today;
+  });
+  state.todayCount = todayEntries.reduce((sum, entry) => sum + entry.count, 0);
+  state.lastUpdatedDate = simulatedDate.toDateString();
+  updateStats();
+  updateGoalProgress();
+  saveStateToLocalStorage();
+  updateSimulatedDateDisplay();
+  console.log(`Simulated date is now: ${simulatedDate.toDateString()}`);
+});
+function updateSimulatedDateDisplay() {
+  document.getElementById('currentDate').innerText = `Date: ${simulatedDate.toDateString()}`;
+}
+document.getElementById('prevDay').addEventListener('click', () => {
+  const previousDate = new Date(simulatedDate);
+  simulatedDate.setDate(simulatedDate.getDate() - 1);
+  if (isNewWeek(previousDate, simulatedDate)) {
+    state.weeklyData = [0, 0, 0, 0, 0, 0, 0];
+    if (window.myChart) {
+      window.myChart.data.datasets[0].data = state.weeklyData;
+      window.myChart.update('none');
     }
-
-    function updateGoalProgress() {
-        const currentWeekCount = state.weeklyData.reduce((sum, day) => sum + day, 0); // Total de la semana actual
-        const goal = state.weeklyGoal;
-
-        // Actualiza la barra de progreso
-        const progressPercentage = goal > 0 ? Math.min((currentWeekCount / goal) * 100, 100) : 0;
-        document.getElementById('goalProgressBar').style.width = `${progressPercentage}%`;
-
-        // Actualiza el estado del objetivo
-        let statusText = "";
-        if (goal === 0) {
-            statusText = "Goal not set. Set your weekly goal!";
-        } else if (currentWeekCount >= goal) {
-            statusText = "Goal reached! Great job!";
-            triggerConfetti(); // Llamada para generar confeti
-            displayCelebrationMessage(); // Muestra el mensaje de celebración
-        } else {
-            const remaining = goal - currentWeekCount;
-            statusText = `${remaining} drinks left to reach your goal this week.`;
-        }
-        document.getElementById('goalStatus').innerText = statusText;
-
-        // Actualiza el DOM
-        document.getElementById('currentWeekCount').innerText = currentWeekCount;
-        document.getElementById('weeklyGoalDisplay').innerText = goal > 0 ? goal : "Not Set";
+  }
+  const today = simulatedDate.toDateString();
+  const todayEntries = state.consumptionHistory.filter(entry => {
+    const entryDate = new Date(entry.date).toDateString();
+    return entryDate === today;
+  });
+  state.todayCount = todayEntries.reduce((sum, entry) => sum + entry.count, 0);
+  state.lastUpdatedDate = simulatedDate.toDateString();
+  updateStats();
+  updateGoalProgress();
+  saveStateToLocalStorage();
+  updateSimulatedDateDisplay();
+  console.log(`Simulated date is now: ${simulatedDate.toDateString()}`);
+});
+document.getElementById('addMonster').addEventListener('click', e => {
+  createRipple(e);
+  const currentDate = new Date();
+  const today = (simulatedDate.getDay() + 6) % 7;
+  const todayDate = simulatedDate.getDate() - 1;
+  state.todayCount++;
+  state.allTimeTotal++;
+  state.weeklyData[today] += 1;
+  if (state.currentView === 'monthly') {
+    const currentMonthData = state.monthlyData;
+    currentMonthData[todayDate] += 1;
+  }
+  state.consumptionHistory.push({
+    date: simulatedDate.toISOString(),
+    count: 1
+  });
+  updateStats();
+  const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0];
+  if (selectedDate) {
+    updateChartWithSelectedDate(selectedDate);
+  } else {
+    updateChart(false);
+  }
+  updateGoalProgress();
+  saveStateToLocalStorage();
+});
+document.getElementById('removeMonster').addEventListener('click', e => {
+  createRipple(e);
+  if (state.todayCount > 0) {
+    const currentDate = new Date();
+    const today = (simulatedDate.getDay() + 6) % 7;
+    const todayDate = simulatedDate.getDate() - 1;
+    state.todayCount = Math.max(0, state.todayCount - 1);
+    state.allTimeTotal = Math.max(0, state.allTimeTotal - 1);
+    state.weeklyData[today] = Math.max(0, state.weeklyData[today] - 1);
+    if (state.currentView === 'monthly') {
+      const currentMonthData = state.monthlyData;
+      currentMonthData[todayDate] = Math.max(0, currentMonthData[todayDate] - 1);
     }
-
-    let simulatedDate = new Date(); // Fecha simulada
-
-    document.getElementById('nextDay').addEventListener('click', () => {
-        // Avanzar un día en la fecha simulada
-        simulatedDate.setDate(simulatedDate.getDate() + 1);
-
-        const today = simulatedDate.toDateString();
-
-        // Busca en el historial las entradas correspondientes a este día
-        const todayEntries = state.consumptionHistory.filter(entry => {
-            const entryDate = new Date(entry.date).toDateString();
-            return entryDate === today;
-        });
-
-        // Actualiza el todayCount sumando los valores del historial
-        state.todayCount = todayEntries.reduce((sum, entry) => sum + entry.count, 0);
-
-        // Guardar la nueva fecha simulada
-        state.lastUpdatedDate = simulatedDate.toDateString();
-
-        // Actualizar la interfaz
-        updateStats();
-        updateGoalProgress();
-        saveStateToLocalStorage();
-        updateSimulatedDateDisplay();
-        console.log(`Simulated date is now: ${simulatedDate.toDateString()}`); // Depuración
-    });
-
-    function updateSimulatedDateDisplay() {
-        document.getElementById('currentDate').innerText = `Date: ${simulatedDate.toDateString()}`;
+    if (state.consumptionHistory.length > 0) {
+      state.consumptionHistory.pop();
     }
-
-    document.getElementById('prevDay').addEventListener('click', () => {
-        // Retroceder un día en la fecha simulada
-        simulatedDate.setDate(simulatedDate.getDate() - 1);
-
-        const today = simulatedDate.toDateString();
-
-        // Busca en el historial las entradas correspondientes a este día
-        const todayEntries = state.consumptionHistory.filter(entry => {
-            const entryDate = new Date(entry.date).toDateString();
-            return entryDate === today;
-        });
-
-        // Actualiza el todayCount sumando los valores del historial
-        state.todayCount = todayEntries.reduce((sum, entry) => sum + entry.count, 0);
-
-        // Guardar la nueva fecha simulada
-        state.lastUpdatedDate = simulatedDate.toDateString();
-
-        // Actualizar la interfaz
-        updateStats();
-        updateGoalProgress();
-        saveStateToLocalStorage();
-        updateSimulatedDateDisplay();
-        console.log(`Simulated date is now: ${simulatedDate.toDateString()}`); // Depuración
-    });
-
-    document.getElementById('addMonster').addEventListener('click', (e) => {
-        createRipple(e);
-
-        const currentDate = new Date();
-        const today = (simulatedDate.getDay() + 6) % 7;
-        const todayDate = simulatedDate.getDate() - 1;
-
-        state.todayCount++;
-        state.allTimeTotal++;
-        state.weeklyData[today] += 1;
-        
-        // Update the current month's data regardless of selected date
-        if (state.currentView === 'monthly') {
-            const currentMonthData = state.monthlyData;
-            currentMonthData[todayDate] += 1;
-        }
-        
-        state.consumptionHistory.push({
-            date: simulatedDate.toISOString(),
-            count: 1
-        });
-
-        updateStats();
-        
-        // Re-render chart with currently selected date
-        const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0];
-        if (selectedDate) {
-            updateChartWithSelectedDate(selectedDate);
-        } else {
-            updateChart(false);
-        }
-        
-        updateGoalProgress();
-        saveStateToLocalStorage();
-    });
-    
-    document.getElementById('removeMonster').addEventListener('click', (e) => {
-        createRipple(e);
-        if (state.todayCount > 0) {
-            const currentDate = new Date();
-            const today = (simulatedDate.getDay() + 6) % 7;
-            const todayDate = simulatedDate.getDate() - 1;
-
-            state.todayCount = Math.max(0, state.todayCount - 1);
-            state.allTimeTotal = Math.max(0, state.allTimeTotal - 1);
-            state.weeklyData[today] = Math.max(0, state.weeklyData[today] - 1);
-            
-            // Update the current month's data regardless of selected date
-            if (state.currentView === 'monthly') {
-                const currentMonthData = state.monthlyData;
-                currentMonthData[todayDate] = Math.max(0, currentMonthData[todayDate] - 1);
-            }
-            
-            if (state.consumptionHistory.length > 0) {
-                state.consumptionHistory.pop();
-            }
-            
-            updateStats();
-            
-            // Re-render chart with currently selected date
-            const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0];
-            if (selectedDate) {
-                updateChartWithSelectedDate(selectedDate);
-            } else {
-                updateChart(true);
-            }
-            
-            updateGoalProgress();
-            saveStateToLocalStorage();
-        } else {
-        // Mensaje opcional para cuando ya está en 0
-        displayWarningMessage("⚠️ No hay más Monsters para eliminar hoy.");
+    updateStats();
+    const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0];
+    if (selectedDate) {
+      updateChartWithSelectedDate(selectedDate);
+    } else {
+      updateChart(true);
     }
-    });
-
-    function displayWarningMessage(message) {
-        // Crear un mensaje de advertencia dinámicamente
-        const warningContainer = document.createElement('div');
-        warningContainer.id = 'warningMessage';
-        warningContainer.style.position = 'fixed';
-        warningContainer.style.top = '50%';
-        warningContainer.style.left = '50%';
-        warningContainer.style.transform = 'translate(-50%, -50%)';
-        warningContainer.style.padding = '20px 30px';
-        warningContainer.style.backgroundColor = '#f01a21'; // Rojo pastel
-        warningContainer.style.color = '#fff'; // Texto oscuro para contraste
-        warningContainer.style.fontSize = '1.5rem';
-        warningContainer.style.fontFamily = 'Inter, sans-serif';
-        warningContainer.style.fontWeight = 'bold';
-        warningContainer.style.borderRadius = '12px';
-        warningContainer.style.textAlign = 'center';
-        warningContainer.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
-        warningContainer.style.zIndex = '1000';
-        warningContainer.style.opacity = '0';
-        warningContainer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        warningContainer.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.8)'; // Sombra en el texto
-        warningContainer.innerHTML = message;
-
-        // Agregar el mensaje al DOM
-        document.body.appendChild(warningContainer);
-
-        gsap.fromTo(
-            warningContainer,
-            { opacity: 0, scale: 0.1 }, // Inicia pequeño y transparente
-            {
-                opacity: 1,
-                scale: 1.1,
-                duration: 0.5,
-                ease: 'bounce.out', // Efecto de rebote
-            }
-        );
-
-        // Agregar un destello dinámico con GSAP
-        gsap.to(warningContainer, {
-            keyframes: [
-                { textShadow: '0 0 10px rgba(0, 0, 0, 0.9)', duration: 0.3, ease: 'power1.inOut' },
-                { textShadow: '0 0 0 rgba(0, 0, 0, 0)', duration: 2 },
-            ],
-        });
-
-        // Animar entrada
-        setTimeout(() => {
-            warningContainer.style.opacity = '1';
-            warningContainer.style.transform = 'translate(-50%, -45%)';
-        }, 50);
-
-        // Eliminar el mensaje después de 3 segundos
-        setTimeout(() => {
-            warningContainer.style.opacity = '0'; // Desvanecer
-            warningContainer.style.transform = 'translate(-50%, -50%)';
-            setTimeout(() => warningContainer.remove(), 500); // Remover después de desvanecer
-        }, 1000);
+    updateGoalProgress();
+    saveStateToLocalStorage();
+  } else {
+    displayWarningMessage("⚠️ No hay más Monsters para eliminar hoy.");
+  }
+});
+function displayWarningMessage(message) {
+  const warningContainer = document.createElement('div');
+  warningContainer.id = 'warningMessage';
+  warningContainer.style.position = 'fixed';
+  warningContainer.style.top = '50%';
+  warningContainer.style.left = '50%';
+  warningContainer.style.transform = 'translate(-50%, -50%)';
+  warningContainer.style.padding = '20px 30px';
+  warningContainer.style.backgroundColor = '#f01a21';
+  warningContainer.style.color = '#fff';
+  warningContainer.style.fontSize = '1.5rem';
+  warningContainer.style.fontFamily = 'Inter, sans-serif';
+  warningContainer.style.fontWeight = 'bold';
+  warningContainer.style.borderRadius = '12px';
+  warningContainer.style.textAlign = 'center';
+  warningContainer.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
+  warningContainer.style.zIndex = '1000';
+  warningContainer.style.opacity = '0';
+  warningContainer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  warningContainer.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.8)';
+  warningContainer.innerHTML = message;
+  document.body.appendChild(warningContainer);
+  gsap.fromTo(warningContainer, {
+    opacity: 0,
+    scale: 0.1
+  }, {
+    opacity: 1,
+    scale: 1.1,
+    duration: 0.5,
+    ease: 'bounce.out'
+  });
+  gsap.to(warningContainer, {
+    keyframes: [{
+      textShadow: '0 0 10px rgba(0, 0, 0, 0.9)',
+      duration: 0.3,
+      ease: 'power1.inOut'
+    }, {
+      textShadow: '0 0 0 rgba(0, 0, 0, 0)',
+      duration: 2
+    }]
+  });
+  setTimeout(() => {
+    warningContainer.style.opacity = '1';
+    warningContainer.style.transform = 'translate(-50%, -45%)';
+  }, 50);
+  setTimeout(() => {
+    warningContainer.style.opacity = '0';
+    warningContainer.style.transform = 'translate(-50%, -50%)';
+    setTimeout(() => warningContainer.remove(), 500);
+  }, 1000);
+}
+function saveStateToLocalStorage() {
+  state.lastUpdatedDate = new Date().toDateString();
+  localStorage.setItem('monsterTrackerState', JSON.stringify(state));
+}
+function loadStateFromLocalStorage() {
+  const savedState = localStorage.getItem('monsterTrackerState');
+  if (savedState) {
+    const parsedState = JSON.parse(savedState);
+    const currentDate = simulatedDate.toDateString();
+    if (parsedState.lastUpdatedDate !== currentDate) {
+      parsedState.todayCount = 0;
+      parsedState.lastUpdatedDate = currentDate;
     }
-
-    function saveStateToLocalStorage() {
-        state.lastUpdatedDate = new Date().toDateString();
-        localStorage.setItem('monsterTrackerState', JSON.stringify(state));
+    Object.assign(state, JSON.parse(savedState));
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  loadStateFromLocalStorage();
+  updateStats();
+  const viewType = document.getElementById('viewType');
+  const datePicker = document.getElementById('datePicker');
+  if (viewType.value === 'weekly') {
+    datePicker.style.display = 'none';
+    state.currentView = 'weekly';
+    updateChart(false);
+  } else {
+    datePicker.style.display = 'block';
+    state.currentView = 'monthly';
+    const flatpickrInstance = datePicker._flatpickr;
+    if (!flatpickrInstance.selectedDates[0]) {
+      flatpickrInstance.setDate(new Date());
     }
-
-    function loadStateFromLocalStorage() {
-        const savedState = localStorage.getItem('monsterTrackerState');
-        if (savedState) {
-            const parsedState = JSON.parse(savedState);
-            const currentDate = simulatedDate.toDateString();
-            // Reinicia el contador si ha cambiado el día
-            if (parsedState.lastUpdatedDate !== currentDate) {
-                parsedState.todayCount = 0;
-                parsedState.lastUpdatedDate = currentDate;
-            }
-            Object.assign(state, JSON.parse(savedState));
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        loadStateFromLocalStorage(); // Load saved data
-        updateStats();              // Update statistics
-        
-        const viewType = document.getElementById('viewType');
-        const datePicker = document.getElementById('datePicker');
-        
-        // Set initial view and visibility
-        if (viewType.value === 'weekly') {
-            datePicker.style.display = 'none';
-            state.currentView = 'weekly';
-        } else {
-            datePicker.style.display = 'block';
-            state.currentView = 'monthly';
-
-            // Asegúrate de seleccionar la fecha actual y forzar la actualización en móviles
-            const flatpickrInstance = datePicker._flatpickr;
-            if (!flatpickrInstance.selectedDates[0]) {
-                flatpickrInstance.setDate(new Date()); // Selecciona la fecha actual
-            }
-            updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
-        }
-        
-        updateChart();
-        updateGoalProgress();
-    });
-
-    </script>
+    updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
+  }
+  updateChart();
+  updateGoalProgress();
+});
+function isNewWeek(previousDate, currentDate) {
+  const prev = new Date(previousDate);
+  const curr = new Date(currentDate);
+  const prevWeek = prev.getFullYear() + '-' + prev.getWeek();
+  const currWeek = curr.getFullYear() + '-' + curr.getWeek();
+  return prevWeek !== currWeek;
+}
+Date.prototype.getWeek = function () {
+  const d = new Date(Date.UTC(this.getFullYear(), this.getMonth(), this.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+};</script>
     </body></html>
