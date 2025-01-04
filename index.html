@@ -684,15 +684,16 @@
     }
 
     // Actualizar el título del gráfico con el mes y año seleccionados
-    const chartTitle = selectedDate.toLocaleString('default', {
-        month: 'long',
-        year: 'numeric'
-    });
     if (window.myChart) {
+      const chartTitle = selectedDate.toLocaleString('default', {
+          month: 'long',
+          year: 'numeric'
+      });
+    
         window.myChart.options.plugins.title.text = chartTitle;
         window.myChart.update();
     }
-    
+
     updateChart();
   }
   function updateChart(isRemoving = false) {
