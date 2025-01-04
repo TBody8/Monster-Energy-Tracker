@@ -628,16 +628,21 @@
     currentView: 'weekly',
     currentStreak: 0,
     longestStreak: 0,
-    lastStreakDate: null
+    lastStreakDate: null,
+    goalAchieved: false,
   };
   document.getElementById('setGoal').addEventListener('click', () => {
     const goalInput = document.getElementById('weeklyGoal');
     const newGoal = parseInt(goalInput.value);
-    if (isNaN(newGoal) || newGoal <= 0) {
-      alert("Please enter a valid goal greater than 0.");
+    if (isNaN(newGoal) || newGoal <= state.weeklyGoal) {
+      alert("Please enter a valid goal than the current one!");
+      return;
+    }else if(isNaN(newGoal) || newGoal <= state.weeklyGoal){
+      alert("Please enter a valid goal grater than 0.");
       return;
     }
     state.weeklyGoal = newGoal;
+    state.goalAchieved = false;
     goalInput.value = "";
     updateGoalProgress();
     saveStateToLocalStorage();
@@ -975,12 +980,22 @@
     const progressPercentage = goal > 0 ? Math.min(currentWeekCount / goal * 100, 100) : 0;
     document.getElementById('goalProgressBar').style.width = `${progressPercentage}%`;
     let statusText = "";
+    document.getElementById('weeklyGoalDisplay').style.color = "";
     if (goal === 0) {
       statusText = "Goal not set. Set your weekly goal!";
+      document.getElementById('weeklyGoalDisplay').style.color = "red";
     } else if (currentWeekCount >= goal) {
-      statusText = "Goal reached! Great job!";
-      triggerConfetti();
-      displayCelebrationMessage();
+      document.getElementById('weeklyGoalDisplay').style.color = "";
+      if (!state.goalAchieved) {
+        // Ejecutar animación y mostrar mensaje solo si no se ha cumplido antes
+        statusText = "Goal reached! Great job!";
+        triggerConfetti();
+        displayCelebrationMessage();
+        state.goalAchieved = true; // Marcar meta como cumplida
+        saveStateToLocalStorage(); // Guardar en el navegador
+      } else {
+        statusText = "Goal already reached. Set a higher goal!";
+      }
     } else {
       const remaining = goal - currentWeekCount;
       statusText = `${remaining} drinks left to reach your goal this week.`;
