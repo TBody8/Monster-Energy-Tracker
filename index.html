@@ -533,7 +533,7 @@
             <p class="promotion-text" style="font-size: 1.5rem;">Designed by Diego.J</p>
             <a href="https://www.instagram.com/diiegoo_.06/" target="_blank" class="instagram-link">
               <svg class="instagram-icon" viewBox="0 0 24 24" width="24" height="24">
-                <path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                <path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013 3.583.07 4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
               </svg>
             </a>
           </div>
@@ -1063,26 +1063,39 @@
   document.getElementById('removeMonster').addEventListener('click', e => {
     createRipple(e);
     if (state.todayCount > 0) {
-      const currentDate = new Date();
       const today = (simulatedDate.getDay() + 6) % 7;
       const todayDate = simulatedDate.getDate() - 1;
+      
+      // Update counts
       state.todayCount = Math.max(0, state.todayCount - 1);
       state.allTimeTotal = Math.max(0, state.allTimeTotal - 1);
       state.weeklyData[today] = Math.max(0, state.weeklyData[today] - 1);
+      
       if (state.currentView === 'monthly') {
-        const currentMonthData = state.monthlyData;
-        currentMonthData[todayDate] = Math.max(0, currentMonthData[todayDate] - 1);
+          const currentMonthData = state.monthlyData;
+          currentMonthData[todayDate] = Math.max(0, currentMonthData[todayDate] - 1);
       }
+      
+      // Remove last consumption entry
       if (state.consumptionHistory.length > 0) {
-        state.consumptionHistory.pop();
+          // Find and remove the latest entry for today
+          const todayStr = simulatedDate.toISOString().split('T')[0];
+          const index = state.consumptionHistory.findLastIndex(
+              entry => entry.date.startsWith(todayStr)
+          );
+          if (index !== -1) {
+              state.consumptionHistory.splice(index, 1);
+          }
       }
+      
+      // Update all stats and UI
       updateStats();
       updateStreaks();
       const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0];
       if (selectedDate) {
-        updateChartWithSelectedDate(selectedDate);
+          updateChartWithSelectedDate(selectedDate);
       } else {
-        updateChart(true);
+          updateChart(true);
       }
       updateGoalProgress();
       saveStateToLocalStorage();
@@ -1199,7 +1212,7 @@
   function updateStreaks() {
       const today = simulatedDate.getTime();
       
-      // Check if there's consumption today
+      // Check if there's consumption today after potential removal
       const hasTodayConsumption = state.todayCount > 0;
       
       // Get dates for streak calculation
@@ -1227,12 +1240,12 @@
                   state.lastStreakDate = today;
               } else {
                   // Break in streak, start new one
-                  state.currentStreak = 1;
+                  state.currentStreak = 0;
                   state.lastStreakDate = today;
               }
           }
       } else {
-          // Check if we should break the streak
+          // No consumption today - check if we need to break the streak
           if (lastStreakDate) {
               const diffDays = Math.round((currentDate - lastStreakDate) / (1000 * 60 * 60 * 24));
               
@@ -1241,11 +1254,24 @@
                   state.currentStreak = 0;
                   state.lastStreakDate = null;
               }
+              // If we removed all monsters for today, we need to revert to previous streak date
+              if (diffDays === 0) {
+                  const previousDate = new Date(lastStreakDate);
+                  previousDate.setDate(previousDate.getDate() - 1);
+                  if (state.currentStreak > 0) {
+                      state.currentStreak--;
+                  }
+                  if (state.currentStreak === 0) {
+                      state.lastStreakDate = null;
+                  } else {
+                      state.lastStreakDate = previousDate.getTime();
+                  }
+              }
           }
       }
 
       // Update longest streak
-      if (state.currentStreak > state.longestStreak) {
+      if (state.currentStreak > 0 && state.currentStreak > state.longestStreak) {
           state.longestStreak = state.currentStreak;
       }
 
@@ -1253,20 +1279,18 @@
       const currentStreakElement = document.getElementById('currentStreak');
       const longestStreakElement = document.getElementById('longestStreak');
       
-      // Remove and re-add animation classes
       currentStreakElement.classList.remove('count-up-animation');
       longestStreakElement.classList.remove('count-up-animation');
       
-      // Force reflow
       void currentStreakElement.offsetWidth;
       void longestStreakElement.offsetWidth;
       
       currentStreakElement.classList.add('count-up-animation');
       longestStreakElement.classList.add('count-up-animation');
       
-      // Animate the values
-      animateValue(currentStreakElement, 0, state.currentStreak, 800);
-      animateValue(longestStreakElement, 0, state.longestStreak, 800);
+      // Animate values
+      animateValue(currentStreakElement, parseInt(currentStreakElement.textContent), state.currentStreak, 200);
+      animateValue(longestStreakElement, parseInt(longestStreakElement.textContent), state.longestStreak, 200);
       
       // Save state
       saveStateToLocalStorage();
