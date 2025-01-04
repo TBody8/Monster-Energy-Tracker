@@ -968,6 +968,10 @@
   function updateGoalProgress() {
     const currentWeekCount = state.weeklyData.reduce((sum, day) => sum + day, 0);
     const goal = state.weeklyGoal;
+    const today = simulatedDate || new Date();
+    const currentDayIndex = today.getDate();
+    const daysLeft = 7 - currentDayIndex
+
     const progressPercentage = goal > 0 ? Math.min(currentWeekCount / goal * 100, 100) : 0;
     document.getElementById('goalProgressBar').style.width = `${progressPercentage}%`;
     let statusText = "";
@@ -984,6 +988,7 @@
     document.getElementById('goalStatus').innerText = statusText;
     document.getElementById('currentWeekCount').innerText = currentWeekCount;
     document.getElementById('weeklyGoalDisplay').innerText = goal > 0 ? goal : "Not Set";
+    document.getElementById('daysLeft').innerText = daysLeft;
   }
   function updateSimulatedDayData() {
     const currentDateStr = simulatedDate.toISOString().split('T')[0];
