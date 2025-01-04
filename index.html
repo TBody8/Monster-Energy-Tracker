@@ -387,6 +387,7 @@
       background: var(--monster-dark) !important;
       border: 2px solid var(--monster-green) !important;
       box-shadow: 0 0 20px rgba(40, 100, 28, 0.2) !important;
+      width: fit-content;
   }
   
   .flatpickr-months .flatpickr-month {
@@ -641,11 +642,20 @@
     updateGoalProgress();
     saveStateToLocalStorage();
   });
+
+  const datePickerInput = document.getElementById('datePicker');
+
+  datePickerInput.addEventListener('focus', (e) => {
+      e.preventDefault(); // Evita que Chrome muestre su selector nativo
+  });
+
+
   flatpickr("#datePicker", {
     mode: "single",
     enableTime: false,
     dateFormat: "F Y",
     defaultDate: new Date(),
+    disableMobile: true, // Fuerza a Flatpickr a ignorar el selector nativo
     plugins: [new monthSelectPlugin({
       shorthand: true,
       dateFormat: "F Y"
