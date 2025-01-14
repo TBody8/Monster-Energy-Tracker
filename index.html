@@ -143,6 +143,17 @@
       border: 2px solid var(--monster-green);
   }
   
+  .btn-secondary.reset {
+      background: #ff4444;
+      border-color: #ff4444;
+  }
+  
+  .btn-secondary.reset:hover {
+      background: #ff0000;
+      border-color: #ff0000;
+      box-shadow: 0 0 25px rgba(255, 0, 0, 0.3);
+  }
+  
   .btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 0 25px var(--monster-green);
@@ -257,6 +268,27 @@
   
   .goals-section:hover {
       box-shadow: 0 0 15px rgba(40, 100, 28, 0.2);
+  }
+  
+  .goal-type-selector {
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+
+  .goal-type-selector select {
+    width: 100%;
+    padding: 0.8rem;
+    background: var(--monster-dark);
+    border: 2px solid var(--monster-green);
+    color: var(--monster-white);
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .goal-type-selector select:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(40, 100, 28, 0.3);
   }
   
   .goals-section h2 {
@@ -589,10 +621,18 @@
       </div>
   
       <div class="goals-section">
-          <h2>Consumption Goals</h2>
+          <h2>Consumption Goals &amp; Limits</h2>
           <div class="goal-input">
-              <input type="number" id="weeklyGoal" placeholder="Set weekly drink limit" min="1">
-              <button class="btn btn-secondary" id="setGoal">Set Goal</button>
+            <div class="goal-type-selector">
+              <select id="goalType" class="dropdown">
+                <option value="daily">Daily Limit</option>
+                <option value="weekly">Weekly Limit</option>
+                <option value="monthly">Monthly Limit</option>
+              </select>
+            </div>
+            <input type="number" id="goalAmount" placeholder="Enter limit amount" min="1">
+            <button class="btn btn-secondary" id="setGoal">Set Limit</button>
+            <button class="btn btn-secondary reset" id="resetGoal">Reset Limit</button>
           </div>
           <div class="goal-progress">
               <div class="goal-progress-bar" id="goalProgressBar"></div>
@@ -600,13 +640,13 @@
           <p id="goalStatus"></p>
           <div class="goal-details">
               <div class="goal-detail-item">
-                  <p>Current Week: <span id="currentWeekCount">0</span></p>
+                  <p>Current Period: <span id="currentPeriodCount">0</span></p>
               </div>
               <div class="goal-detail-item">
-                  <p>Goal: <span id="weeklyGoalDisplay">Not Set</span></p>
+                  <p>Limit: <span id="periodGoalDisplay">Not Set</span></p>
               </div>
               <div class="goal-detail-item">
-                  <p>Days Left: <span id="daysLeft">7</span></p>
+                  <p>Remaining: <span id="remainingAmount">-</span></p>
               </div>
           </div>
       </div>
@@ -616,746 +656,735 @@
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script>
-  const state = {
-    todayCount: 0,
-    lastUpdatedDate: new Date().toDateString(),
-    weeklyData: [0, 0, 0, 0, 0, 0, 0],
-    monthlyData: Array(30).fill(0),
-    allTimeTotal: 0,
-    weeklyGoal: 0,
-    consumptionHistory: [],
-    currentView: 'weekly',
-    currentStreak: 0,
-    longestStreak: 0,
-    lastStreakDate: null,
-    goalAchieved: false,
-  };
-  document.getElementById('setGoal').addEventListener('click', () => {
-    const goalInput = document.getElementById('weeklyGoal');
-    const newGoal = parseInt(goalInput.value);
-    if (isNaN(newGoal) || newGoal <= state.weeklyGoal) {
-      alert("Please enter a valid goal than the current one!");
-      return;
-    }else if(isNaN(newGoal) || newGoal <= state.weeklyGoal){
-      alert("Please enter a valid goal grater than 0.");
-      return;
+  <script>const state = {
+  todayCount: 0,
+  lastUpdatedDate: new Date().toDateString(),
+  weeklyData: [0, 0, 0, 0, 0, 0, 0],
+  monthlyData: Array(30).fill(0),
+  allTimeTotal: 0,
+  goals: {
+    daily: 0,
+    weekly: 0,
+    monthly: 0,
+    currentType: 'daily'
+  },
+  consumptionHistory: [],
+  currentView: 'weekly',
+  currentStreak: 0,
+  longestStreak: 0,
+  lastStreakDate: null,
+  goalAchieved: false
+};
+document.getElementById('setGoal').addEventListener('click', () => {
+  const goalInput = document.getElementById('goalAmount');
+  const goalType = document.getElementById('goalType').value;
+  const newGoal = parseInt(goalInput.value);
+  if (isNaN(newGoal) || newGoal <= 0) {
+    alert("Please enter a valid number greater than 0");
+    return;
+  }
+  state.goals[goalType] = newGoal;
+  state.goals.currentType = goalType;
+  state.goalAchieved = false;
+  goalInput.value = "";
+  updateGoalProgress();
+  saveStateToLocalStorage();
+});
+const datePickerInput = document.getElementById('datePicker');
+datePickerInput.addEventListener('focus', e => {
+  e.preventDefault();
+});
+flatpickr("#datePicker", {
+  mode: "single",
+  enableTime: false,
+  dateFormat: "F Y",
+  defaultDate: new Date(),
+  disableMobile: true,
+  plugins: [new monthSelectPlugin({
+    shorthand: true,
+    dateFormat: "F Y"
+  })],
+  onReady: function (selectedDates, dateStr, instance) {
+    updateCalendarView(instance);
+  },
+  onChange: function (selectedDates) {
+    if (selectedDates.length > 0) {
+      updateChartWithSelectedDate(selectedDates[0]);
     }
-    state.weeklyGoal = newGoal;
-    state.goalAchieved = false;
-    goalInput.value = "";
-    updateGoalProgress();
-    saveStateToLocalStorage();
-  });
-
-  const datePickerInput = document.getElementById('datePicker');
-
-  datePickerInput.addEventListener('focus', (e) => {
-      e.preventDefault(); // Evita que Chrome muestre su selector nativo
-  });
-
-
-  flatpickr("#datePicker", {
-    mode: "single",
-    enableTime: false,
-    dateFormat: "F Y",
-    defaultDate: new Date(),
-    disableMobile: true, // Fuerza a Flatpickr a ignorar el selector nativo
-    plugins: [new monthSelectPlugin({
+  }
+});
+function updateCalendarView(instance) {
+  const view = document.getElementById('viewType').value;
+  if (view === 'monthly') {
+    instance.set("plugins", [new monthSelectPlugin({
       shorthand: true,
       dateFormat: "F Y"
-    })],
-    onReady: function (selectedDates, dateStr, instance) {
-      updateCalendarView(instance);
-    },
-    onChange: function (selectedDates) {
-      if (selectedDates.length > 0) {
-        updateChartWithSelectedDate(selectedDates[0]);
+    })]);
+    instance.set("dateFormat", "F Y");
+  }
+}
+function updateChartWithSelectedDate(selectedDate) {
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth();
+  if (state.currentView === 'monthly') {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    state.monthlyData = Array(daysInMonth).fill(0);
+    state.consumptionHistory.forEach(entry => {
+      const entryDate = new Date(entry.date);
+      if (entryDate.getMonth() === month && entryDate.getFullYear() === year) {
+        state.monthlyData[entryDate.getDate() - 1] += entry.count;
       }
-    }
-  });
-  function updateCalendarView(instance) {
-    const view = document.getElementById('viewType').value;
-    if (view === 'monthly') {
-      instance.set("plugins", [new monthSelectPlugin({
-        shorthand: true,
-        dateFormat: "F Y"
-      })]);
-      instance.set("dateFormat", "F Y");
-    }
+    });
   }
-  function updateChartWithSelectedDate(selectedDate) {
-    const year = selectedDate.getFullYear();
-    const month = selectedDate.getMonth();
-    if (state.currentView === 'monthly') {
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      state.monthlyData = Array(daysInMonth).fill(0);
-      state.consumptionHistory.forEach(entry => {
-        const entryDate = new Date(entry.date);
-        if (entryDate.getMonth() === month && entryDate.getFullYear() === year) {
-          state.monthlyData[entryDate.getDate() - 1] += entry.count;
-        }
-      });
-    }
-
-    // Actualizar el título del gráfico con el mes y año seleccionados
-    if (window.myChart) {
-      const chartTitle = selectedDate.toLocaleString('default', {
-          month: 'long',
-          year: 'numeric'
-      });
-    
-        window.myChart.options.plugins.title.text = chartTitle;
-        window.myChart.update();
-    }
-
-    updateChart();
+  if (window.myChart) {
+    const chartTitle = selectedDate.toLocaleString('default', {
+      month: 'long',
+      year: 'numeric'
+    });
+    window.myChart.options.plugins.title.text = chartTitle;
+    window.myChart.update();
   }
-  function updateChart(isRemoving = false) {
-    const ctx = document.getElementById('consumptionChart').getContext('2d');
-    let chartData;
-    let labels;
-    let chartTitle = '';
-    const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0] || new Date();
-    switch (state.currentView) {
-      case 'weekly':
-        chartData = [...state.weeklyData];
-        labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        chartTitle = 'Weekly Consumption';
-        break;
-      case 'monthly':
-        chartData = [...state.monthlyData];
-        labels = Array.from({
-          length: state.monthlyData.length
-        }, (_, i) => i + 1);
-        chartTitle = selectedDate.toLocaleString('default', {
-          month: 'long',
-          year: 'numeric'
-        });
-        break;
-    }
-    if (!window.myChart) {
-      window.myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Consumption',
-            data: chartData,
-            borderColor: '#28641c',
-            borderWidth: 3,
-            tension: 0.4,
-            fill: true,
-            backgroundColor: 'rgba(40, 100, 28, 0.1)',
-            pointBackgroundColor: '#28641c',
-            pointBorderColor: '#ffffff',
-            pointHoverRadius: 8,
-            pointHoverBackgroundColor: '#28641c',
-            pointHoverBorderColor: '#ffffff',
-            pointHoverBorderWidth: 2
-          }]
+  updateChart();
+}
+function updateChart(isRemoving = false) {
+  const ctx = document.getElementById('consumptionChart').getContext('2d');
+  let chartData;
+  let labels;
+  let chartTitle = '';
+  const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0] || new Date();
+  switch (state.currentView) {
+    case 'weekly':
+      chartData = [...state.weeklyData];
+      labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      chartTitle = 'Weekly Consumption';
+      break;
+    case 'monthly':
+      chartData = [...state.monthlyData];
+      labels = Array.from({
+        length: state.monthlyData.length
+      }, (_, i) => i + 1);
+      chartTitle = selectedDate.toLocaleString('default', {
+        month: 'long',
+        year: 'numeric'
+      });
+      break;
+  }
+  if (!window.myChart) {
+    window.myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Consumption',
+          data: chartData,
+          borderColor: '#28641c',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          backgroundColor: 'rgba(40, 100, 28, 0.1)',
+          pointBackgroundColor: '#28641c',
+          pointBorderColor: '#ffffff',
+          pointHoverRadius: 8,
+          pointHoverBackgroundColor: '#28641c',
+          pointHoverBorderColor: '#ffffff',
+          pointHoverBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 1500,
+          easing: isRemoving ? 'easeOutQuart' : 'easeInOutQuart'
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: {
-            duration: 1500,
-            easing: isRemoving ? 'easeOutQuart' : 'easeInOutQuart'
+        interaction: {
+          intersect: false,
+          mode: 'nearest',
+          axis: 'x'
+        },
+        plugins: {
+          legend: {
+            display: false
           },
-          interaction: {
-            intersect: false,
-            mode: 'nearest',
-            axis: 'x'
-          },
-          plugins: {
-            legend: {
-              display: false
+          title: {
+            display: true,
+            text: chartTitle,
+            color: '#28641c',
+            font: {
+              size: 20,
+              family: 'sans-serif',
+              weight: 'bold'
             },
-            title: {
-              display: true,
-              text: chartTitle,
-              color: '#ffffff',
-              font: {
-                size: 16,
-                family: 'Inter',
-                weight: 'bold'
-              },
-              padding: {
-                top: 10,
-                bottom: 20
+            padding: {
+              top: 10,
+              bottom: 20
+            }
+          },
+          tooltip: {
+            enabled: false,
+            external: function (context) {
+              const tooltip = document.getElementById('chartTooltip');
+              if (context.tooltip.opacity === 0) {
+                tooltip.style.opacity = 0;
+                return;
               }
-            },
-            tooltip: {
-              enabled: false,
-              external: function (context) {
-                const tooltip = document.getElementById('chartTooltip');
-                if (context.tooltip.opacity === 0) {
-                  tooltip.style.opacity = 0;
-                  return;
-                }
-                const dataPoint = context.tooltip.dataPoints[0];
-                const date = labels[dataPoint.dataIndex];
-                const date2 = dataPoint.dataIndex + 1;
-                const value = dataPoint.raw;
-                tooltip.style.opacity = 1;
-                tooltip.style.left = context.tooltip.caretX + 'px';
-                tooltip.style.top = context.tooltip.caretY + 'px';
-                let dateLabel = '';
-                switch (state.currentView) {
-                  case 'weekly':
-                    dateLabel = `${date}`;
-                    break;
-                  case 'monthly':
-                    dateLabel = `${selectedDate.toLocaleString('default', {
-                      month: 'long'
-                    })} ${date2}`;
-                    break;
-                }
-                tooltip.innerHTML = `
+              const dataPoint = context.tooltip.dataPoints[0];
+              const date = labels[dataPoint.dataIndex];
+              const date2 = dataPoint.dataIndex + 1;
+              const value = dataPoint.raw;
+              tooltip.style.opacity = 1;
+              tooltip.style.left = context.tooltip.caretX + 'px';
+              tooltip.style.top = context.tooltip.caretY + 'px';
+              let dateLabel = '';
+              switch (state.currentView) {
+                case 'weekly':
+                  dateLabel = `${date}`;
+                  break;
+                case 'monthly':
+                  dateLabel = `${selectedDate.toLocaleString('default', {
+                    month: 'long'
+                  })} ${date2}`;
+                  break;
+              }
+              tooltip.innerHTML = `
                                       <div style="font-size: 0.8rem; color: #28641c;">${dateLabel}</div>
                                       <div style="font-size: 1.1rem; margin-top: 4px;">${value} drinks</div>
                                   `;
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              suggestedMax: 3,
-              grid: {
-                color: 'rgba(40, 100, 28, 0.1)',
-                drawBorder: false
-              },
-              ticks: {
-                color: '#ffffff',
-                padding: 10,
-                font: {
-                  size: 12
-                },
-                stepSize: 1
-              }
-            },
-            x: {
-              grid: {
-                color: 'rgba(40, 100, 28, 0.1)',
-                drawBorder: false
-              },
-              ticks: {
-                color: '#ffffff',
-                padding: 10,
-                font: {
-                  size: 12
-                }
-              }
-            }
-          },
-          elements: {
-            line: {
-              borderWidth: 3
-            },
-            point: {
-              radius: 4,
-              hitRadius: 10,
-              hoverRadius: 6
             }
           }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            suggestedMax: 3,
+            grid: {
+              color: 'rgba(40, 100, 28, 0.1)',
+              drawBorder: false
+            },
+            ticks: {
+              color: '#ffffff',
+              padding: 10,
+              font: {
+                size: 12
+              },
+              stepSize: 1
+            }
+          },
+          x: {
+            grid: {
+              color: 'rgba(40, 100, 28, 0.1)',
+              drawBorder: false
+            },
+            ticks: {
+              color: '#ffffff',
+              padding: 10,
+              font: {
+                size: 12
+              }
+            }
+          }
+        },
+        elements: {
+          line: {
+            borderWidth: 3
+          },
+          point: {
+            radius: 4,
+            hitRadius: 10,
+            hoverRadius: 6
+          }
         }
-      });
-    } else {
-      window.myChart.data.labels = labels;
-      window.myChart.data.datasets[0].data = chartData;
-      window.myChart.options.plugins.title.text = chartTitle;
-      window.myChart.update();
-    }
-    console.log("Gráfico actualizado con datos:", chartData);
-  }
-  document.getElementById('viewType').addEventListener('change', function (e) {
-    const view = e.target.value;
-    state.currentView = view;
-    const flatpickrInstance = document.querySelector('#datePicker')._flatpickr;
-    if (view === 'weekly') {
-      document.getElementById('datePicker').style.display = 'none';
-      updateChart();
-    } else if (view === 'monthly') {
-      document.getElementById('datePicker').style.display = 'block';
-      if (isMobileDevice()) {
-        if (!flatpickrInstance.selectedDates[0]) {
-          flatpickrInstance.setDate(new Date());
-        }
-        updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
-      } else {
-        if (!flatpickrInstance.selectedDates[0]) {
-          flatpickrInstance.setDate(new Date());
-        }
-        updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
       }
-    } else {
-      document.getElementById('datePicker').style.display = 'block';
-      if (isMobileDevice()) {
+    });
+  } else {
+    window.myChart.data.labels = labels;
+    window.myChart.data.datasets[0].data = chartData;
+    window.myChart.options.plugins.title.text = chartTitle;
+    window.myChart.update();
+  }
+  console.log("Gráfico actualizado con datos:", chartData);
+}
+document.getElementById('viewType').addEventListener('change', function (e) {
+  const view = e.target.value;
+  state.currentView = view;
+  const flatpickrInstance = document.querySelector('#datePicker')._flatpickr;
+  if (view === 'weekly') {
+    document.getElementById('datePicker').style.display = 'none';
+    updateChart();
+  } else if (view === 'monthly') {
+    document.getElementById('datePicker').style.display = 'block';
+    if (isMobileDevice()) {
+      if (!flatpickrInstance.selectedDates[0]) {
         flatpickrInstance.setDate(new Date());
-        updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
-      } else {
-        if (!flatpickrInstance.selectedDates[0]) {
-          flatpickrInstance.setDate(new Date());
-        }
-        updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
       }
-    }
-  });
-  function isMobileDevice() {
-    return /Mobi|Android/i.test(navigator.userAgent);
-  }
-  function updateStats() {
-    document.getElementById('todayCount').innerText = state.todayCount;
-    document.getElementById('allTimeTotal').innerText = state.allTimeTotal;
-    const daysWithData = state.consumptionHistory.reduce((uniqueDays, entry) => {
-      const date = new Date(entry.date).toDateString();
-      uniqueDays.add(date);
-      return uniqueDays;
-    }, new Set()).size;
-    const averagePerDay = daysWithData > 0 ? (state.allTimeTotal / daysWithData).toFixed(1) : 0;
-    document.getElementById('averagePerDay').innerText = averagePerDay;
-    updateStreaks();
-    const currentStreakElement = document.getElementById('currentStreak');
-    const longestStreakElement = document.getElementById('longestStreak');
-    
-    // Add animation class
-    currentStreakElement.classList.add('count-up-animation');
-    longestStreakElement.classList.add('count-up-animation');
-    
-    // Animate the numbers
-    animateValue(currentStreakElement, 0, state.currentStreak, 1000);
-    animateValue(longestStreakElement, 0, state.longestStreak, 1000);
-    
-    // Remove animation class after completion
-    setTimeout(() => {
-      currentStreakElement.classList.remove('count-up-animation');
-      longestStreakElement.classList.remove('count-up-animation');
-    }, 1000);
-  }
-  function createRipple(e) {}
-  function triggerConfetti() {
-    confetti({
-      particleCount: 200,
-      angle: 90,
-      spread: 150,
-      origin: {
-        x: 0.5,
-        y: 0.5
-      },
-      colors: ['#ff0', '#0f0', '#00f', '#f00', '#ff00ff']
-    });
-  }
-  function displayCelebrationMessage() {
-    const messageContainer = document.createElement('div');
-    messageContainer.id = 'celebrationMessage';
-    messageContainer.style.position = 'fixed';
-    messageContainer.style.top = '50%';
-    messageContainer.style.left = '50%';
-    messageContainer.style.transform = 'translate(-50%, -50%)';
-    messageContainer.style.padding = '20px';
-    messageContainer.style.backgroundColor = 'rgb(33, 99, 23)';
-    messageContainer.style.color = '#fff';
-    messageContainer.style.fontSize = '1.5rem';
-    messageContainer.style.fontFamily = 'Inter, sans-serif';
-    messageContainer.style.fontWeight = '100';
-    messageContainer.style.borderRadius = '15px';
-    messageContainer.style.textAlign = 'center';
-    messageContainer.style.boxShadow = '0 0 15px rgb(71, 71, 71)';
-    messageContainer.innerHTML = " FELICIDADES!!<br>A generar más piedra en los riñones ";
-    document.body.appendChild(messageContainer);
-    setTimeout(() => {
-      messageContainer.style.transition = 'opacity 1s';
-      messageContainer.style.opacity = 0;
-      setTimeout(() => document.body.removeChild(messageContainer), 1000);
-    }, 5000);
-  }
-  function updateGoalProgress() {
-    const currentWeekCount = state.weeklyData.reduce((sum, day) => sum + day, 0);
-    const goal = state.weeklyGoal;
-    const today = simulatedDate || new Date();
-    const currentDayIndex = today.getDate();
-    const daysLeft = 7 - currentDayIndex
-
-    const progressPercentage = goal > 0 ? Math.min(currentWeekCount / goal * 100, 100) : 0;
-    document.getElementById('goalProgressBar').style.width = `${progressPercentage}%`;
-    let statusText = "";
-    document.getElementById('weeklyGoalDisplay').style.color = "";
-    if (goal === 0) {
-      statusText = "Goal not set. Set your weekly goal!";
-      document.getElementById('weeklyGoalDisplay').style.color = "red";
-    } else if (currentWeekCount >= goal) {
-      document.getElementById('weeklyGoalDisplay').style.color = "";
-      if (!state.goalAchieved) {
-        // Ejecutar animación y mostrar mensaje solo si no se ha cumplido antes
-        statusText = "Goal reached! Great job!";
-        triggerConfetti();
-        displayCelebrationMessage();
-        state.goalAchieved = true; // Marcar meta como cumplida
-        saveStateToLocalStorage(); // Guardar en el navegador
-      } else {
-        statusText = "Goal already reached. Set a higher goal!";
-      }
+      updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
     } else {
-      const remaining = goal - currentWeekCount;
-      statusText = `${remaining} drinks left to reach your goal this week.`;
-    }
-    document.getElementById('goalStatus').innerText = statusText;
-    document.getElementById('currentWeekCount').innerText = currentWeekCount;
-    document.getElementById('weeklyGoalDisplay').innerText = goal > 0 ? goal : "Not Set";
-    document.getElementById('daysLeft').innerText = daysLeft;
-  }
-  function updateSimulatedDayData() {
-    const currentDateStr = simulatedDate.toISOString().split('T')[0];
-    if (isNewWeek(state.lastUpdatedDate, simulatedDate)) {
-      console.log("Nueva semana detectada. Reiniciando datos semanales.");
-      state.weeklyData = [0, 0, 0, 0, 0, 0, 0];
-      state.todayCount = 0;
-      if (window.myChart) {
-        window.myChart.data.datasets[0].data = state.weeklyData;
-        window.myChart.update('none');
+      if (!flatpickrInstance.selectedDates[0]) {
+        flatpickrInstance.setDate(new Date());
       }
+      updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
     }
-    const dailyHistory = state.consumptionHistory.filter(entry => entry.date.startsWith(currentDateStr));
-    state.todayCount = dailyHistory.reduce((sum, entry) => sum + entry.count, 0);
-    state.lastUpdatedDate = simulatedDate.toDateString();
-    updateStats();
-    updateGoalProgress();
+  } else {
+    document.getElementById('datePicker').style.display = 'block';
+    if (isMobileDevice()) {
+      flatpickrInstance.setDate(new Date());
+      updateChartWithSelectedDate(flatpickrInstance.selectedDates[0]);
+    } else {
+      if (!flatpickrInstance.selectedDates[0]) {
+        flatpickrInstance.setDate(new Date());
+      }
+      updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
+    }
+  }
+});
+function isMobileDevice() {
+  return /Mobi|Android/i.test(navigator.userAgent);
+}
+function updateStats() {
+  document.getElementById('todayCount').innerText = state.todayCount;
+  document.getElementById('allTimeTotal').innerText = state.allTimeTotal;
+  const daysWithData = state.consumptionHistory.reduce((uniqueDays, entry) => {
+    const date = new Date(entry.date).toDateString();
+    uniqueDays.add(date);
+    return uniqueDays;
+  }, new Set()).size;
+  const averagePerDay = daysWithData > 0 ? (state.allTimeTotal / daysWithData).toFixed(1) : 0;
+  document.getElementById('averagePerDay').innerText = averagePerDay;
+  updateStreaks();
+  const currentStreakElement = document.getElementById('currentStreak');
+  const longestStreakElement = document.getElementById('longestStreak');
+  currentStreakElement.classList.add('count-up-animation');
+  longestStreakElement.classList.add('count-up-animation');
+  animateValue(currentStreakElement, 0, state.currentStreak, 1000);
+  animateValue(longestStreakElement, 0, state.longestStreak, 1000);
+  setTimeout(() => {
+    currentStreakElement.classList.remove('count-up-animation');
+    longestStreakElement.classList.remove('count-up-animation');
+  }, 1000);
+}
+function createRipple(e) {}
+function triggerConfetti() {
+  confetti({
+    particleCount: 200,
+    angle: 90,
+    spread: 150,
+    origin: {
+      x: 0.5,
+      y: 0.5
+    },
+    colors: ['#ff0', '#0f0', '#00f', '#f00', '#ff00ff']
+  });
+}
+function displayCelebrationMessage() {
+  const messageContainer = document.createElement('div');
+  messageContainer.id = 'celebrationMessage';
+  messageContainer.style.position = 'fixed';
+  messageContainer.style.top = '50%';
+  messageContainer.style.left = '50%';
+  messageContainer.style.transform = 'translate(-50%, -50%)';
+  messageContainer.style.padding = '20px';
+  messageContainer.style.backgroundColor = 'rgb(33, 99, 23)';
+  messageContainer.style.color = '#fff';
+  messageContainer.style.fontSize = '1.5rem';
+  messageContainer.style.fontFamily = 'Inter, sans-serif';
+  messageContainer.style.fontWeight = '100';
+  messageContainer.style.borderRadius = '15px';
+  messageContainer.style.textAlign = 'center';
+  messageContainer.style.boxShadow = '0 0 15px rgb(71, 71, 71)';
+  messageContainer.innerHTML = " FELICIDADES!!<br>A generar más piedra en los riñones ";
+  document.body.appendChild(messageContainer);
+  setTimeout(() => {
+    messageContainer.style.transition = 'opacity 1s';
+    messageContainer.style.opacity = 0;
+    setTimeout(() => document.body.removeChild(messageContainer), 1000);
+  }, 5000);
+}
+function updateGoalProgress() {
+  const goalType = state.goals.currentType;
+  const goal = state.goals[goalType];
+  let currentCount = 0;
+  switch (goalType) {
+    case 'daily':
+      currentCount = state.todayCount;
+      break;
+    case 'weekly':
+      currentCount = state.weeklyData.reduce((sum, day) => sum + day, 0);
+      break;
+    case 'monthly':
+      currentCount = state.monthlyData.reduce((sum, day) => sum + day, 0);
+      break;
+  }
+  const progressPercentage = goal > 0 ? Math.min(currentCount / goal * 100, 100) : 0;
+  document.getElementById('goalProgressBar').style.width = `${progressPercentage}%`;
+  document.getElementById('goalProgressBar').style.backgroundColor = progressPercentage >= 100 ? '#ff4444' : progressPercentage >= 80 ? '#ffaa00' : '#28641c';
+  let statusText = "";
+  if (goal === 0) {
+    statusText = "No limit set for this period";
+    document.getElementById('resetGoal').style.display = 'none';
+  } else {
+    document.getElementById('resetGoal').style.display = 'inline-block';
+    if (currentCount >= goal && !state.goalAchieved) {
+      statusText = `Warning: ${goalType} limit exceeded!`;
+      displayWarningMessage(`${goalType.charAt(0).toUpperCase() + goalType.slice(1)} limit reached!`);
+      state.goalAchieved = true;
+    } else if (currentCount >= goal) {
+      statusText = `Warning: ${goalType} limit exceeded!`;
+    } else {
+      const remaining = goal - currentCount;
+      statusText = `${remaining} drinks remaining for this ${goalType} period`;
+    }
+  }
+  document.getElementById('goalStatus').innerText = statusText;
+  document.getElementById('currentPeriodCount').innerText = currentCount;
+  document.getElementById('periodGoalDisplay').innerText = goal > 0 ? goal : "Not Set";
+  document.getElementById('remainingAmount').innerText = goal > 0 ? Math.max(0, goal - currentCount) : "-";
+}
+function updateSimulatedDayData() {
+  const currentDateStr = simulatedDate.toISOString().split('T')[0];
+  if (isNewWeek(state.lastUpdatedDate, simulatedDate)) {
+    console.log("Nueva semana detectada. Reiniciando datos semanales.");
+    state.weeklyData = [0, 0, 0, 0, 0, 0, 0];
+    state.todayCount = 0;
+    if (window.myChart) {
+      window.myChart.data.datasets[0].data = state.weeklyData;
+      window.myChart.update('none');
+    }
+  }
+  const dailyHistory = state.consumptionHistory.filter(entry => entry.date.startsWith(currentDateStr));
+  state.todayCount = dailyHistory.reduce((sum, entry) => sum + entry.count, 0);
+  state.lastUpdatedDate = simulatedDate.toDateString();
+  updateStats();
+  updateGoalProgress();
+  updateChart(false);
+  updateSimulatedDateDisplay();
+  saveStateToLocalStorage();
+}
+let simulatedDate = new Date();
+document.getElementById('nextDay').addEventListener('click', () => {
+  const previousDate = new Date(simulatedDate);
+  simulatedDate.setDate(simulatedDate.getDate() + 1);
+  if (isNewWeek(previousDate, simulatedDate)) {
+    state.weeklyData = [0, 0, 0, 0, 0, 0, 0];
+    if (window.myChart) {
+      window.myChart.data.datasets[0].data = state.weeklyData;
+      window.myChart.update('none');
+    }
+  }
+  const today = simulatedDate.toDateString();
+  const todayEntries = state.consumptionHistory.filter(entry => {
+    const entryDate = new Date(entry.date).toDateString();
+    return entryDate === today;
+  });
+  state.todayCount = todayEntries.reduce((sum, entry) => sum + entry.count, 0);
+  state.lastUpdatedDate = simulatedDate.toDateString();
+  updateStats();
+  updateGoalProgress();
+  saveStateToLocalStorage();
+  updateSimulatedDateDisplay();
+  console.log(`Simulated date is now: ${simulatedDate.toDateString()}`);
+});
+function updateSimulatedDateDisplay() {
+  document.getElementById('currentDate').innerText = `Date: ${simulatedDate.toDateString()}`;
+}
+document.getElementById('prevDay').addEventListener('click', () => {
+  const previousDate = new Date(simulatedDate);
+  simulatedDate.setDate(simulatedDate.getDate() - 1);
+  if (isNewWeek(previousDate, simulatedDate)) {
+    state.weeklyData = [0, 0, 0, 0, 0, 0, 0];
+    if (window.myChart) {
+      window.myChart.data.datasets[0].data = state.weeklyData;
+      window.myChart.update('none');
+    }
+  }
+  const today = simulatedDate.toDateString();
+  const todayEntries = state.consumptionHistory.filter(entry => {
+    const entryDate = new Date(entry.date).toDateString();
+    return entryDate === today;
+  });
+  state.todayCount = todayEntries.reduce((sum, entry) => sum + entry.count, 0);
+  state.lastUpdatedDate = simulatedDate.toDateString();
+  updateStats();
+  updateGoalProgress();
+  saveStateToLocalStorage();
+  updateSimulatedDateDisplay();
+  console.log(`Simulated date is now: ${simulatedDate.toDateString()}`);
+});
+document.getElementById('addMonster').addEventListener('click', e => {
+  createRipple(e);
+  const currentDate = new Date();
+  const today = (simulatedDate.getDay() + 6) % 7;
+  const todayDate = simulatedDate.getDate() - 1;
+  state.todayCount++;
+  state.allTimeTotal++;
+  state.weeklyData[today] += 1;
+  if (state.currentView === 'monthly') {
+    const currentMonthData = state.monthlyData;
+    currentMonthData[todayDate] += 1;
+  }
+  state.consumptionHistory.push({
+    date: simulatedDate.toISOString(),
+    count: 1
+  });
+  updateStats();
+  updateStreaks();
+  const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0];
+  if (selectedDate) {
+    updateChartWithSelectedDate(selectedDate);
+  } else {
     updateChart(false);
-    updateSimulatedDateDisplay();
-    saveStateToLocalStorage();
   }
-  let simulatedDate = new Date();
-  document.getElementById('nextDay').addEventListener('click', () => {
-    const previousDate = new Date(simulatedDate);
-    simulatedDate.setDate(simulatedDate.getDate() + 1);
-    if (isNewWeek(previousDate, simulatedDate)) {
-      state.weeklyData = [0, 0, 0, 0, 0, 0, 0];
-      if (window.myChart) {
-        window.myChart.data.datasets[0].data = state.weeklyData;
-        window.myChart.update('none');
-      }
-    }
-    const today = simulatedDate.toDateString();
-    const todayEntries = state.consumptionHistory.filter(entry => {
-      const entryDate = new Date(entry.date).toDateString();
-      return entryDate === today;
-    });
-    state.todayCount = todayEntries.reduce((sum, entry) => sum + entry.count, 0);
-    state.lastUpdatedDate = simulatedDate.toDateString();
-    updateStats();
-    updateGoalProgress();
-    saveStateToLocalStorage();
-    updateSimulatedDateDisplay();
-    console.log(`Simulated date is now: ${simulatedDate.toDateString()}`);
-  });
-  function updateSimulatedDateDisplay() {
-    document.getElementById('currentDate').innerText = `Date: ${simulatedDate.toDateString()}`;
-  }
-  document.getElementById('prevDay').addEventListener('click', () => {
-    const previousDate = new Date(simulatedDate);
-    simulatedDate.setDate(simulatedDate.getDate() - 1);
-    if (isNewWeek(previousDate, simulatedDate)) {
-      state.weeklyData = [0, 0, 0, 0, 0, 0, 0];
-      if (window.myChart) {
-        window.myChart.data.datasets[0].data = state.weeklyData;
-        window.myChart.update('none');
-      }
-    }
-    const today = simulatedDate.toDateString();
-    const todayEntries = state.consumptionHistory.filter(entry => {
-      const entryDate = new Date(entry.date).toDateString();
-      return entryDate === today;
-    });
-    state.todayCount = todayEntries.reduce((sum, entry) => sum + entry.count, 0);
-    state.lastUpdatedDate = simulatedDate.toDateString();
-    updateStats();
-    updateGoalProgress();
-    saveStateToLocalStorage();
-    updateSimulatedDateDisplay();
-    console.log(`Simulated date is now: ${simulatedDate.toDateString()}`);
-  });
-  document.getElementById('addMonster').addEventListener('click', e => {
-    createRipple(e);
-    const currentDate = new Date();
+  updateGoalProgress();
+  saveStateToLocalStorage();
+});
+document.getElementById('removeMonster').addEventListener('click', e => {
+  createRipple(e);
+  if (state.todayCount > 0) {
     const today = (simulatedDate.getDay() + 6) % 7;
     const todayDate = simulatedDate.getDate() - 1;
-    state.todayCount++;
-    state.allTimeTotal++;
-    state.weeklyData[today] += 1;
+    state.todayCount = Math.max(0, state.todayCount - 1);
+    state.allTimeTotal = Math.max(0, state.allTimeTotal - 1);
+    state.weeklyData[today] = Math.max(0, state.weeklyData[today] - 1);
     if (state.currentView === 'monthly') {
       const currentMonthData = state.monthlyData;
-      currentMonthData[todayDate] += 1;
+      currentMonthData[todayDate] = Math.max(0, currentMonthData[todayDate] - 1);
     }
-    state.consumptionHistory.push({
-      date: simulatedDate.toISOString(),
-      count: 1
-    });
+    if (state.consumptionHistory.length > 0) {
+      const todayStr = simulatedDate.toISOString().split('T')[0];
+      const index = state.consumptionHistory.findLastIndex(entry => entry.date.startsWith(todayStr));
+      if (index !== -1) {
+        state.consumptionHistory.splice(index, 1);
+      }
+    }
     updateStats();
     updateStreaks();
     const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0];
     if (selectedDate) {
       updateChartWithSelectedDate(selectedDate);
     } else {
-      updateChart(false);
+      updateChart(true);
     }
     updateGoalProgress();
     saveStateToLocalStorage();
+  } else {
+    displayWarningMessage(" No hay más Monsters para eliminar hoy.");
+  }
+});
+function displayWarningMessage(message) {
+  const warningContainer = document.createElement('div');
+  warningContainer.id = 'warningMessage';
+  warningContainer.style.position = 'fixed';
+  warningContainer.style.top = '50%';
+  warningContainer.style.left = '50%';
+  warningContainer.style.transform = 'translate(-50%, -50%)';
+  warningContainer.style.padding = '20px 30px';
+  warningContainer.style.backgroundColor = '#f01a21';
+  warningContainer.style.color = '#fff';
+  warningContainer.style.fontSize = '1.5rem';
+  warningContainer.style.fontFamily = 'Inter, sans-serif';
+  warningContainer.style.fontWeight = 'bold';
+  warningContainer.style.borderRadius = '12px';
+  warningContainer.style.textAlign = 'center';
+  warningContainer.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
+  warningContainer.style.zIndex = '1000';
+  warningContainer.style.opacity = '0';
+  warningContainer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  warningContainer.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.8)';
+  warningContainer.innerHTML = message;
+  document.body.appendChild(warningContainer);
+  gsap.fromTo(warningContainer, {
+    opacity: 0,
+    scale: 0.1
+  }, {
+    opacity: 1,
+    scale: 1.1,
+    duration: 0.5,
+    ease: 'bounce.out'
   });
-  document.getElementById('removeMonster').addEventListener('click', e => {
-    createRipple(e);
-    if (state.todayCount > 0) {
-      const today = (simulatedDate.getDay() + 6) % 7;
-      const todayDate = simulatedDate.getDate() - 1;
-      
-      // Update counts
-      state.todayCount = Math.max(0, state.todayCount - 1);
-      state.allTimeTotal = Math.max(0, state.allTimeTotal - 1);
-      state.weeklyData[today] = Math.max(0, state.weeklyData[today] - 1);
-      
-      if (state.currentView === 'monthly') {
-          const currentMonthData = state.monthlyData;
-          currentMonthData[todayDate] = Math.max(0, currentMonthData[todayDate] - 1);
-      }
-      
-      // Remove last consumption entry
-      if (state.consumptionHistory.length > 0) {
-          // Find and remove the latest entry for today
-          const todayStr = simulatedDate.toISOString().split('T')[0];
-          const index = state.consumptionHistory.findLastIndex(
-              entry => entry.date.startsWith(todayStr)
-          );
-          if (index !== -1) {
-              state.consumptionHistory.splice(index, 1);
-          }
-      }
-      
-      // Update all stats and UI
-      updateStats();
-      updateStreaks();
-      const selectedDate = document.querySelector('#datePicker')._flatpickr?.selectedDates[0];
-      if (selectedDate) {
-          updateChartWithSelectedDate(selectedDate);
-      } else {
-          updateChart(true);
-      }
-      updateGoalProgress();
-      saveStateToLocalStorage();
-    } else {
-      displayWarningMessage(" No hay más Monsters para eliminar hoy.");
-    }
-  });
-  function displayWarningMessage(message) {
-    const warningContainer = document.createElement('div');
-    warningContainer.id = 'warningMessage';
-    warningContainer.style.position = 'fixed';
-    warningContainer.style.top = '50%';
-    warningContainer.style.left = '50%';
-    warningContainer.style.transform = 'translate(-50%, -50%)';
-    warningContainer.style.padding = '20px 30px';
-    warningContainer.style.backgroundColor = '#f01a21';
-    warningContainer.style.color = '#fff';
-    warningContainer.style.fontSize = '1.5rem';
-    warningContainer.style.fontFamily = 'Inter, sans-serif';
-    warningContainer.style.fontWeight = 'bold';
-    warningContainer.style.borderRadius = '12px';
-    warningContainer.style.textAlign = 'center';
-    warningContainer.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
-    warningContainer.style.zIndex = '1000';
-    warningContainer.style.opacity = '0';
-    warningContainer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-    warningContainer.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.8)';
-    warningContainer.innerHTML = message;
-    document.body.appendChild(warningContainer);
-    gsap.fromTo(warningContainer, {
-      opacity: 0,
-      scale: 0.1
+  gsap.to(warningContainer, {
+    keyframes: [{
+      textShadow: '0 0 10px rgba(0, 0, 0, 0.9)',
+      duration: 0.3,
+      ease: 'power1.inOut'
     }, {
-      opacity: 1,
-      scale: 1.1,
-      duration: 0.5,
-      ease: 'bounce.out'
-    });
-    gsap.to(warningContainer, {
-      keyframes: [{
-        textShadow: '0 0 10px rgba(0, 0, 0, 0.9)',
-        duration: 0.3,
-        ease: 'power1.inOut'
-      }, {
-        textShadow: '0 0 0 rgba(0, 0, 0, 0)',
-        duration: 2
-      }]
-    });
-    setTimeout(() => {
-      warningContainer.style.opacity = '1';
-      warningContainer.style.transform = 'translate(-50%, -45%)';
-    }, 50);
-    setTimeout(() => {
-      warningContainer.style.opacity = '0';
-      warningContainer.style.transform = 'translate(-50%, -50%)';
-      setTimeout(() => warningContainer.remove(), 500);
-    }, 1000);
-  }
-  function saveStateToLocalStorage() {
-    state.lastUpdatedDate = new Date().toDateString();
-    localStorage.setItem('monsterTrackerState', JSON.stringify(state));
-  }
-  function loadStateFromLocalStorage() {
-    const savedState = localStorage.getItem('monsterTrackerState');
-    if (savedState) {
-      const parsedState = JSON.parse(savedState);
-      const currentDate = simulatedDate.toDateString();
-      if (parsedState.lastUpdatedDate !== currentDate) {
-        parsedState.todayCount = 0;
-        parsedState.lastUpdatedDate = currentDate;
-      }
-      if (parsedState.lastStreakDate) {
-        parsedState.lastStreakDate = new Date(parsedState.lastStreakDate).getTime();
-      }
-      Object.assign(state, parsedState);
-      updateStreaks();
-    }
-  }
-  document.addEventListener('DOMContentLoaded', () => {
-    loadStateFromLocalStorage();
-    updateStats();
-    const viewType = document.getElementById('viewType');
-    const datePicker = document.getElementById('datePicker');
-    if (viewType.value === 'weekly') {
-      datePicker.style.display = 'none';
-      state.currentView = 'weekly';
-      updateChart(false);
-    } else {
-      datePicker.style.display = 'block';
-      state.currentView = 'monthly';
-      const flatpickrInstance = datePicker._flatpickr;
-      if (!flatpickrInstance.selectedDates[0]) {
-        flatpickrInstance.setDate(new Date());
-      }
-      updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
-    }
-    updateChart();
-    updateGoalProgress();
+      textShadow: '0 0 0 rgba(0, 0, 0, 0)',
+      duration: 2
+    }]
   });
-  function isNewWeek(previousDate, currentDate) {
-    const prev = new Date(previousDate);
-    const curr = new Date(currentDate);
-    const prevWeek = prev.getFullYear() + '-' + prev.getWeek();
-    const currWeek = curr.getFullYear() + '-' + curr.getWeek();
-    return prevWeek !== currWeek;
+  setTimeout(() => {
+    warningContainer.style.opacity = '1';
+    warningContainer.style.transform = 'translate(-50%, -45%)';
+  }, 50);
+  setTimeout(() => {
+    warningContainer.style.opacity = '0';
+    warningContainer.style.transform = 'translate(-50%, -50%)';
+    setTimeout(() => warningContainer.remove(), 500);
+  }, 1000);
+}
+function saveStateToLocalStorage() {
+  state.lastUpdatedDate = new Date().toDateString();
+  localStorage.setItem('monsterTrackerState', JSON.stringify(state));
+}
+function loadStateFromLocalStorage() {
+  const savedState = localStorage.getItem('monsterTrackerState');
+  if (savedState) {
+    const parsedState = JSON.parse(savedState);
+    const currentDate = simulatedDate.toDateString();
+    if (parsedState.lastUpdatedDate !== currentDate) {
+      parsedState.todayCount = 0;
+      parsedState.lastUpdatedDate = currentDate;
+    }
+    if (parsedState.lastStreakDate) {
+      parsedState.lastStreakDate = new Date(parsedState.lastStreakDate).getTime();
+    }
+    Object.assign(state, parsedState);
+    updateStreaks();
   }
-  Date.prototype.getWeek = function () {
-    const d = new Date(Date.UTC(this.getFullYear(), this.getMonth(), this.getDate()));
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-  };
-  function updateStreaks() {
-      const today = simulatedDate.getTime();
-      
-      // Check if there's consumption today after potential removal
-      const hasTodayConsumption = state.todayCount > 0;
-      
-      // Get dates for streak calculation
-      const currentDate = new Date(simulatedDate);
-      currentDate.setHours(0, 0, 0, 0);
-      
-      const lastStreakDate = state.lastStreakDate ? new Date(state.lastStreakDate) : null;
-      if (lastStreakDate) {
-          lastStreakDate.setHours(0, 0, 0, 0);
-      }
-
-      if (hasTodayConsumption) {
-          if (!lastStreakDate) {
-              // Starting a new streak
-              state.currentStreak = 1;
-              state.lastStreakDate = today;
-          } else {
-              const diffDays = Math.round((currentDate - lastStreakDate) / (1000 * 60 * 60 * 24));
-              
-              if (diffDays <= 1) {
-                  // Continue streak if it's the same day or consecutive day
-                  if (diffDays === 1) {
-                      state.currentStreak++;
-                  }
-                  state.lastStreakDate = today;
-              } else {
-                  // Break in streak, start new one
-                  state.currentStreak = 0;
-                  state.lastStreakDate = today;
-              }
-          }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  loadStateFromLocalStorage();
+  updateStats();
+  const viewType = document.getElementById('viewType');
+  const datePicker = document.getElementById('datePicker');
+  if (viewType.value === 'weekly') {
+    datePicker.style.display = 'none';
+    state.currentView = 'weekly';
+    updateChart(false);
+  } else {
+    datePicker.style.display = 'block';
+    state.currentView = 'monthly';
+    const flatpickrInstance = datePicker._flatpickr;
+    if (!flatpickrInstance.selectedDates[0]) {
+      flatpickrInstance.setDate(new Date());
+    }
+    updateChartWithSelectedDate(flatpickrInstance.selectedDates[0] || new Date());
+  }
+  updateChart();
+  updateGoalProgress();
+});
+function isNewWeek(previousDate, currentDate) {
+  const prev = new Date(previousDate);
+  const curr = new Date(currentDate);
+  const prevWeek = prev.getFullYear() + '-' + prev.getWeek();
+  const currWeek = curr.getFullYear() + '-' + curr.getWeek();
+  return prevWeek !== currWeek;
+}
+Date.prototype.getWeek = function () {
+  const d = new Date(Date.UTC(this.getFullYear(), this.getMonth(), this.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+};
+function updateStreaks() {
+  const today = simulatedDate.getTime();
+  const hasTodayConsumption = state.todayCount > 0;
+  const currentDate = new Date(simulatedDate);
+  currentDate.setHours(0, 0, 0, 0);
+  const lastStreakDate = state.lastStreakDate ? new Date(state.lastStreakDate) : null;
+  if (lastStreakDate) {
+    lastStreakDate.setHours(0, 0, 0, 0);
+  }
+  if (hasTodayConsumption) {
+    if (!lastStreakDate) {
+      state.currentStreak = 1;
+      state.lastStreakDate = today;
+    } else {
+      const diffDays = Math.round((currentDate - lastStreakDate) / (1000 * 60 * 60 * 24));
+      if (diffDays <= 1) {
+        if (diffDays === 1) {
+          state.currentStreak++;
+        }
+        state.lastStreakDate = today;
       } else {
-          // No consumption today - check if we need to break the streak
-          if (lastStreakDate) {
-              const diffDays = Math.round((currentDate - lastStreakDate) / (1000 * 60 * 60 * 24));
-              
-              if (diffDays > 1) {
-                  // Break streak if more than one day has passed without consumption
-                  state.currentStreak = 0;
-                  state.lastStreakDate = null;
-              }
-              // If we removed all monsters for today, we need to revert to previous streak date
-              if (diffDays === 0) {
-                  const previousDate = new Date(lastStreakDate);
-                  previousDate.setDate(previousDate.getDate() - 1);
-                  if (state.currentStreak > 0) {
-                      state.currentStreak--;
-                  }
-                  if (state.currentStreak === 0) {
-                      state.lastStreakDate = null;
-                  } else {
-                      state.lastStreakDate = previousDate.getTime();
-                  }
-              }
-          }
+        state.currentStreak = 0;
+        state.lastStreakDate = today;
       }
-
-      // Update longest streak
-      if (state.currentStreak > 0 && state.currentStreak > state.longestStreak) {
-          state.longestStreak = state.currentStreak;
+    }
+  } else {
+    if (lastStreakDate) {
+      const diffDays = Math.round((currentDate - lastStreakDate) / (1000 * 60 * 60 * 24));
+      if (diffDays > 1) {
+        state.currentStreak = 0;
+        state.lastStreakDate = null;
       }
-
-      // Update UI with smooth animations
-      const currentStreakElement = document.getElementById('currentStreak');
-      const longestStreakElement = document.getElementById('longestStreak');
-      
-      currentStreakElement.classList.remove('count-up-animation');
-      longestStreakElement.classList.remove('count-up-animation');
-      
-      void currentStreakElement.offsetWidth;
-      void longestStreakElement.offsetWidth;
-      
-      currentStreakElement.classList.add('count-up-animation');
-      longestStreakElement.classList.add('count-up-animation');
-      
-      // Animate values
-      animateValue(currentStreakElement, parseInt(currentStreakElement.textContent), state.currentStreak, 200);
-      animateValue(longestStreakElement, parseInt(longestStreakElement.textContent), state.longestStreak, 200);
-      
-      // Save state
-      saveStateToLocalStorage();
+      if (diffDays === 0) {
+        const previousDate = new Date(lastStreakDate);
+        previousDate.setDate(previousDate.getDate() - 1);
+        if (state.currentStreak > 0) {
+          state.currentStreak--;
+        }
+        if (state.currentStreak === 0) {
+          state.lastStreakDate = null;
+        } else {
+          state.lastStreakDate = previousDate.getTime();
+        }
+      }
+    }
   }
-
-  // Update the animation function to be smoother
-  function animateValue(element, start, end, duration) {
-      let startTimestamp = null;
-      const easeOutQuart = t => 1 - (--t) * t * t * t;
-      
-      const step = (timestamp) => {
-          if (!startTimestamp)startTimestamp = timestamp;
-          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-          const easedProgress = easeOutQuart(progress);
-          const value = Math.floor(easedProgress * (end - start) + start);
-          element.textContent = value;
-          
-          if (progress < 1) {
-              window.requestAnimationFrame(step);
-          }
-      };
-      
+  if (state.currentStreak > 0 && state.currentStreak > state.longestStreak) {
+    state.longestStreak = state.currentStreak;
+  }
+  const currentStreakElement = document.getElementById('currentStreak');
+  const longestStreakElement = document.getElementById('longestStreak');
+  currentStreakElement.classList.remove('count-up-animation');
+  longestStreakElement.classList.remove('count-up-animation');
+  void currentStreakElement.offsetWidth;
+  void longestStreakElement.offsetWidth;
+  currentStreakElement.classList.add('count-up-animation');
+  longestStreakElement.classList.add('count-up-animation');
+  animateValue(currentStreakElement, parseInt(currentStreakElement.textContent), state.currentStreak, 200);
+  animateValue(longestStreakElement, parseInt(longestStreakElement.textContent), state.longestStreak, 200);
+  saveStateToLocalStorage();
+}
+function animateValue(element, start, end, duration) {
+  let startTimestamp = null;
+  const easeOutQuart = t => 1 - --t * t * t * t;
+  const step = timestamp => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+    const easedProgress = easeOutQuart(progress);
+    const value = Math.floor(easedProgress * (end - start) + start);
+    element.textContent = value;
+    if (progress < 1) {
       window.requestAnimationFrame(step);
+    }
+  };
+  window.requestAnimationFrame(step);
+}
+document.getElementById('goalType').addEventListener('change', e => {
+  const previousType = state.goals.currentType;
+  const newType = e.target.value;
+  state.goals.currentType = newType;
+  state.goalAchieved = false;
+  let currentCount = 0;
+  switch (newType) {
+    case 'daily':
+      currentCount = state.todayCount;
+      break;
+    case 'weekly':
+      currentCount = state.weeklyData.reduce((sum, day) => sum + day, 0);
+      break;
+    case 'monthly':
+      currentCount = state.monthlyData.reduce((sum, day) => sum + day, 0);
+      break;
   }
-  </script>
+  const goal = state.goals[newType];
+  if (goal > 0 && currentCount >= goal) {
+    displayWarningMessage(`${newType.charAt(0).toUpperCase() + newType.slice(1)} limit reached!`);
+    state.goalAchieved = true;
+  }
+  updateGoalProgress();
+});
+document.getElementById('resetGoal').addEventListener('click', () => {
+  state.goals.daily = 0;
+  state.goals.weekly = 0;
+  state.goals.monthly = 0;
+  state.goals.currentType = 'daily';
+  state.goalAchieved = false;
+  document.getElementById('goalAmount').value = '';
+  document.getElementById('goalType').value = 'daily';
+  updateGoalProgress();
+  saveStateToLocalStorage();
+  displayWarningMessage("All consumption limits have been reset!");
+});</script>
   </body></html>
