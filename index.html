@@ -621,7 +621,7 @@
       </div>
   
       <div class="goals-section">
-          <h2>Consumption Goals &amp; Limits</h2>
+          <h2>Consumption &amp; Limits</h2>
           <div class="goal-input">
             <div class="goal-type-selector">
               <select id="goalType" class="dropdown">
@@ -640,7 +640,7 @@
           <p id="goalStatus"></p>
           <div class="goal-details">
               <div class="goal-detail-item">
-                  <p>Current Period: <span id="currentPeriodCount">0</span></p>
+                  <p>Current Monsters: <span id="currentPeriodCount">0</span></p>
               </div>
               <div class="goal-detail-item">
                   <p>Limit: <span id="periodGoalDisplay">Not Set</span></p>
@@ -1237,6 +1237,9 @@ function loadStateFromLocalStorage() {
       parsedState.lastStreakDate = new Date(parsedState.lastStreakDate).getTime();
     }
     Object.assign(state, parsedState);
+    if (parsedState.goals && parsedState.goals.currentType) {
+      document.getElementById('goalType').value = parsedState.goals.currentType;
+    }
     updateStreaks();
   }
 }
@@ -1374,6 +1377,7 @@ document.getElementById('goalType').addEventListener('change', e => {
     state.goalAchieved = true;
   }
   updateGoalProgress();
+  saveStateToLocalStorage();
 });
 document.getElementById('resetGoal').addEventListener('click', () => {
   state.goals.daily = 0;
